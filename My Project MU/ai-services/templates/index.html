@@ -202,14 +202,15 @@
                         <input type="file" id="file-upload" class="hidden" onchange="handleFileUpload(event)">
                     </label>
 
-                    <!-- Voice Recognition Button -->
+                    <!-- Fast Voice Recognition Button with Active Indicator -->
                     <button 
                         type="button" 
+                        id="mic-btn"
                         onclick="startVoiceRecognition()"
-                        class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-3 rounded-xl transition flex items-center justify-center"
-                        title="Voice Input"
+                        class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-3 rounded-xl transition flex items-center justify-center relative"
+                        title="Fast Voice Input"
                     >
-                        <i class="fa-solid fa-microphone text-sm"></i>
+                        <i id="mic-icon" class="fa-solid fa-microphone text-sm"></i>
                     </button>
 
                     <!-- Text Input Bar -->
@@ -349,7 +350,7 @@
 
             try {
                 // Connect to your live backend endpoint
-                const response = await fetch('/api/chat', {
+                const response = await fetch('/ai/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ message: query })
@@ -359,61 +360,79 @@
 
                 if (response.ok) {
                     const data = await response.json();
-                    const aiMessage = data.reply || data.message || data.answer || JSON.stringify(data);
                     const aiMsgHTML = `
                         <div class="flex items-start space-x-3">
                             <div class="w-8 h-8 rounded-full bg-brand-500/20 text-brand-400 flex items-center justify-center border border-brand-500/30 flex-shrink-0 mt-0.5">
                                 <i class="fa-solid fa-robot text-sm"></i>
                             </div>
-                            <div class="bg-slate-800/80 border border-slate-700/60 rounded-2xl p-4 text-sm text-slate-200 shadow-sm max-w-2xl">
-                                <p>${escapeHtml(aiMessage)}</p>
+                            <div class="bg-slate-800/80 border border-slate-700/60 rounded-2xl p-4 text-sm text-slate-200 max-w-2xl shadow-sm">
+                                <p>${data.response || 'No response received.'}</p>
                             </div>
                         </div>
                     `;
                     messageBox.insertAdjacentHTML('beforeend', aiMsgHTML);
+                    messageBox.scrollTop = messageBox.scrollHeight;
                 } else {
-                    const errorHtml = `
-                        <div class="flex items-start space-x-3">
-                            <div class="w-8 h-8 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center border border-rose-500/30 flex-shrink-0 mt-0.5">
-                                <i class="fa-solid fa-triangle-exclamation text-sm"></i>
-                            </div>
-                            <div class="bg-slate-800/80 border border-slate-700/60 rounded-2xl p-4 text-sm text-slate-400 shadow-sm max-w-2xl">
-                                <p>Unable to process the request. Please try again later.</p>
-                            </div>
-                        </div>
-                    `;
-                    messageBox.insertAdjacentHTML('beforeend', errorHtml);
+                    alert('Error: ' + response.status + ' ' + response.statusText);
                 }
             } catch (error) {
-                document.getElementById(loadingId)?.remove();
-                const errorMsgHTML = `
-                    <div class="flex items-start space-x-3">
-                        <div class="w-8 h-8 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center border border-rose-500/30 flex-shrink-0 mt-0.5">
-                            <i class="fa-solid fa-triangle-exclamation text-sm"></i>
-                        </div>
-                        <div class="bg-slate-800/80 border border-slate-700/60 rounded-2xl p-4 text-sm text-slate-400 shadow-sm max-w-2xl">
-                            <p>Network error or server problem. Please try again.</p>
-                        </div>
-                    </div>
-                `;
-                messageBox.insertAdjacentHTML('beforeend', errorMsgHTML);
-            } finally {
-                messageBox.scrollTop = messageBox.scrollHeight;
+                console.error('Error:', error);
+                document.getElementById(loadingId).remove();
+                alert('Connection failed: ' + error.message);
             }
         }
 
-        // 3. Client-Side File Download Logic (Generates report instantly)
+        // Clear Chat History
+        function clearChat() {
+            document.getElementById('chat-messages').innerHTML = `
+                <div class="flex items-start space-x-3">
+                    <div class="w-8 h-8 rounded-full bg-brand-500/20 text-brand-400 flex items-center justify-center border border-brand-500/30 flex-shrink-0 mt-0.5">
+                        <i class="fa-solid fa-robot text-sm"></i>
+                    </div>
+                    <div class="bg-slate-800/80 border border-slate-700/60 rounded-2xl p-4 text-sm text-slate-200 max-w-2xl shadow-sm">
+                        <p>Namaste! I am your <strong>DPDP AI Sahayak</strong>. I can assist you with understanding data fiduciary responsibilities, drafting privacy notices, or analyzing code compliance under India's DPDP Act 2023. How can I assist your engineering workflow today?</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Handle File Upload
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                alert('File uploaded: ' + file.name + '\n\nNote: Implement backend file processing');
+            }
+        }
+
+        // Voice Recognition Handler
+        function startVoiceRecognition() {
+            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.lang = 'en-US';
+            recognition.start();
+            document.getElementById('mic-btn').style.backgroundColor = '#1e293b';
+            document.getElementById('mic-icon').classList.add('fa-spin');
+
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                document.getElementById('user-input').value = transcript;
+            };
+
+            recognition.onend = function() {
+                document.getElementById('mic-btn').style.backgroundColor = '';
+                document.getElementById('mic-icon').classList.remove('fa-spin');
+            };
+        }
+
+        // Download Chat as .txt Report
         function downloadReportCurrentChat() {
-            const chatContent = document.getElementById('chat-messages').innerText;
-            const blob = new Blob([chatContent], { type: 'text/plain;charset=utf-8' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'DPDP_Audit_Report.txt';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
+            const messages = document.getElementById('chat-messages').innerText;
+            const element = document.createElement('a');
+            element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(messages));
+            element.setAttribute('download', 'dpdp-chat-report-' + Date.now() + '.txt');
+            element.style.display = 'none';
+            document.body.appendChild(element);
+            element.click();
+            document.body.removeChild(element);
         }
     </script>
 </body>
