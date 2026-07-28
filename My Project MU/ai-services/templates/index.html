@@ -350,9 +350,13 @@
 
             try {
                 // Connect to your live backend endpoint
+                const token = localStorage.getItem('access_token'); // Assuming you store the token in localStorage
                 const response = await fetch('/ai/chat', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
                     body: JSON.stringify({ message: query })
                 });
 
