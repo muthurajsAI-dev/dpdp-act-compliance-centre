@@ -1,28 +1,34 @@
-import jwt
-from flask import request, jsonify
+# auth.py (or your middleware file)
 from functools import wraps
+from flask import request, jsonify
+import jwt
+import os
 
-# ADD IT HERE - This must match the key in app.py exactly!
-SECRET_KEY = 'Muthuraj_DPDP_AI_Project_Secure_2026_Key_Long'
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         token = None
-        # Check if the token is in the headers
+        # Check if Authorization header is present
         if 'Authorization' in request.headers:
-            # Look for "Bearer <token>"
-            token = request.headers['Authorization'].split(" ")[1]
-
+            auth_header = request.headers['Authorization']
+            try:
+                # Expecting format: "Bearer <token>"
+                token = auth_header.split(" ")[1]
+            except IndexError:
+                return jsonify({"status": "error", "message": "Invalid token format. Use 'Bearer <token>'"}), 401
+        
         if not token:
-            return jsonify({'message': 'Token is missing!'}), 401
+            return jsonify({"status": "error", "message": "Token is missing!"}), 401
 
         try:
-            # Use the SECRET_KEY to unlock and read the token
-            data = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-            current_user = data['user']
-        except Exception as e:
-            return jsonify({'message': 'Token is invalid or expired!'}), 401
+            # Decode the token using the app's secret key
+            data = jwt.decode(token, os.getenv("SECRET_KEY"), algorithms=["HS256"])
+            # You can attach current user to request if needed
+            current_user = data.get('user')
+        except jwt.ExpiredSignatureError:
+            return jsonify({"status": "error", "message": "Token has expired!"}), 401
+        except jwt.InvalidTokenError:
+            return jsonify({"status": "error", "message": "Invalid token!"}), 401
 
-        return f(current_user, *args, **kwargs)
-
+        return f(*args, **kwargs)
     return decorated
