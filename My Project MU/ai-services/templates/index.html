@@ -170,6 +170,10 @@
                     </div>
                 </div>
                 <div class="flex items-center space-x-2">
+                    <!-- Download Report Button -->
+                    <button onclick="downloadReportCurrentChat()" class="text-xs bg-slate-800 hover:bg-slate-700 text-brand-400 border border-slate-700 px-3 py-1.5 rounded-lg transition flex items-center">
+                        <i class="fa-solid fa-download mr-1"></i> Download Report (.txt)
+                    </button>
                     <button onclick="clearChat()" class="text-xs text-slate-400 hover:text-white px-2.5 py-1 rounded-md bg-slate-800 hover:bg-slate-700 transition">
                         <i class="fa-solid fa-rotate-right mr-1"></i> Reset Session
                     </button>
@@ -192,14 +196,32 @@
             <!-- Chat Input Footer -->
             <div class="p-4 border-t border-slate-800 bg-slate-900/90">
                 <form id="chat-form" onsubmit="handleChatSubmit(event)" class="flex items-center gap-2">
+                    <!-- File Attachment Button -->
+                    <label class="cursor-pointer bg-slate-800 hover:bg-slate-700 text-slate-300 p-3 rounded-xl transition flex items-center justify-center" title="Upload Policy File">
+                        <i class="fa-solid fa-paperclip text-sm"></i>
+                        <input type="file" id="file-upload" class="hidden" onchange="handleFileUpload(event)">
+                    </label>
+
+                    <!-- Voice Recognition Button -->
+                    <button 
+                        type="button" 
+                        onclick="startVoiceRecognition()"
+                        class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-3 rounded-xl transition flex items-center justify-center"
+                        title="Voice Input"
+                    >
+                        <i class="fa-solid fa-microphone text-sm"></i>
+                    </button>
+
+                    <!-- Text Input Bar -->
                     <input 
                         type="text" 
                         id="user-input" 
                         placeholder="Ask anything about DPDP compliance, data security, or request an algorithm..." 
                         class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition"
                         autocomplete="off"
-                        required
                     >
+                    
+                    <!-- Send Button -->
                     <button 
                         type="submit" 
                         id="send-btn"
@@ -274,16 +296,19 @@
             }
         }
 
-        // Handle Chat Submission simulation / real API endpoint hook
+        // HTML Escape helper utility
         function escapeHtml(text) {
-            return String(text)
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#39;');
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, function(m) { return map[m]; });
         }
 
+        // Handle Chat Submission simulation / real API endpoint hook
         async function handleChatSubmit(event) {
             event.preventDefault();
             const inputField = document.getElementById('user-input');
@@ -334,56 +359,61 @@
 
                 if (response.ok) {
                     const data = await response.json();
+                    const aiMessage = data.reply || data.message || data.answer || JSON.stringify(data);
                     const aiMsgHTML = `
                         <div class="flex items-start space-x-3">
                             <div class="w-8 h-8 rounded-full bg-brand-500/20 text-brand-400 flex items-center justify-center border border-brand-500/30 flex-shrink-0 mt-0.5">
                                 <i class="fa-solid fa-robot text-sm"></i>
                             </div>
-                            <div class="bg-slate-800/80 border border-slate-700/60 rounded-2xl p-4 text-sm text-slate-200 max-w-2xl shadow-sm leading-relaxed">
-                                <p>${escapeHtml(data.response || data.message || "Response processed successfully.")}</p>
+                            <div class="bg-slate-800/80 border border-slate-700/60 rounded-2xl p-4 text-sm text-slate-200 shadow-sm max-w-2xl">
+                                <p>${escapeHtml(aiMessage)}</p>
                             </div>
                         </div>
                     `;
                     messageBox.insertAdjacentHTML('beforeend', aiMsgHTML);
                 } else {
-                    throw new Error("Server returned non-200 status");
-                }
-            } catch (err) {
-                // Fallback simulation response if backend route is still wiring up JSON response formats
-                const loadingElement = document.getElementById(loadingId);
-                if (loadingElement) {
-                    loadingElement.remove();
-                }
-                const fallbackHTML = `
-                    <div class="flex items-start space-x-3">
-                        <div class="w-8 h-8 rounded-full bg-brand-500/20 text-brand-400 flex items-center justify-center border border-brand-500/30 flex-shrink-0 mt-0.5">
-                            <i class="fa-solid fa-robot text-sm"></i>
+                    const errorHtml = `
+                        <div class="flex items-start space-x-3">
+                            <div class="w-8 h-8 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center border border-rose-500/30 flex-shrink-0 mt-0.5">
+                                <i class="fa-solid fa-triangle-exclamation text-sm"></i>
+                            </div>
+                            <div class="bg-slate-800/80 border border-slate-700/60 rounded-2xl p-4 text-sm text-slate-400 shadow-sm max-w-2xl">
+                                <p>Unable to process the request. Please try again later.</p>
+                            </div>
                         </div>
-                        <div class="bg-slate-800/80 border border-slate-700/60 rounded-2xl p-4 text-sm text-slate-200 max-w-2xl shadow-sm leading-relaxed">
-                            <p>Under the <strong>Digital Personal Data Protection Act 2023</strong>, processing data requires explicit notice, consent, and purpose limitation. Your query regarding <em>"${escapeHtml(query)}"</em> aligns with Section 6 guidelines on lawful consent frameworks.</p>
+                    `;
+                    messageBox.insertAdjacentHTML('beforeend', errorHtml);
+                }
+            } catch (error) {
+                document.getElementById(loadingId)?.remove();
+                const errorMsgHTML = `
+                    <div class="flex items-start space-x-3">
+                        <div class="w-8 h-8 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center border border-rose-500/30 flex-shrink-0 mt-0.5">
+                            <i class="fa-solid fa-triangle-exclamation text-sm"></i>
+                        </div>
+                        <div class="bg-slate-800/80 border border-slate-700/60 rounded-2xl p-4 text-sm text-slate-400 shadow-sm max-w-2xl">
+                            <p>Network error or server problem. Please try again.</p>
                         </div>
                     </div>
                 `;
-                messageBox.insertAdjacentHTML('beforeend', fallbackHTML);
+                messageBox.insertAdjacentHTML('beforeend', errorMsgHTML);
+            } finally {
+                messageBox.scrollTop = messageBox.scrollHeight;
             }
-            messageBox.scrollTop = messageBox.scrollHeight;
         }
 
-        function clearChat() {
-            const messageBox = document.getElementById('chat-messages');
-            if (!messageBox) return;
-
-            messageBox.innerHTML = `
-                <div class="flex items-start space-x-3">
-                    <div class="w-8 h-8 rounded-full bg-brand-500/20 text-brand-400 flex items-center justify-center border border-brand-500/30 flex-shrink-0 mt-0.5">
-                        <i class="fa-solid fa-robot text-sm"></i>
-                    </div>
-                    <div class="bg-slate-800/80 border border-slate-700/60 rounded-2xl p-4 text-sm text-slate-200 max-w-2xl shadow-sm">
-                        <p>Namaste! I am your <strong>DPDP AI Sahayak</strong>. I can assist you with understanding data fiduciary responsibilities, drafting privacy notices, or analyzing code compliance under India's DPDP Act 2023. How can I assist your engineering workflow today?</p>
-                    </div>
-                </div>
-            `;
-            messageBox.scrollTop = messageBox.scrollHeight;
+        // 3. Client-Side File Download Logic (Generates report instantly)
+        function downloadReportCurrentChat() {
+            const chatContent = document.getElementById('chat-messages').innerText;
+            const blob = new Blob([chatContent], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'DPDP_Audit_Report.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
         }
     </script>
 </body>
