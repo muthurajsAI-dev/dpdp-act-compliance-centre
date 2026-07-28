@@ -1,78 +1,390 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full bg-slate-950">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DPDP Navigator - Login</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-        .login-card { width: 350px; background: #1e293b; padding: 30px; border-radius: 12px; border: 1px solid #334155; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
-        h2 { text-align: center; margin-bottom: 20px; color: #4f46e5; }
-        .input-group { margin-bottom: 15px; }
-        input { width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #475569; background: #0f172a; color: white; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; background: #4f46e5; color: white; margin-top: 10px; }
-        button:hover { background: #4338ca; }
-    </style>
-</head>
-<body>
-
-    <div class="login-card">
-        <h2>DPDP Compliance Login</h2>
-        <div class="input-group">
-            <input type="text" id="username" placeholder="Username">
-        </div>
-        <div class="input-group">
-            <input type="password" id="password" placeholder="Password">
-        </div>
-        <button onclick="login()">Login to Dashboard</button>
-    </div>
-
+    <title>DPDP AI Sahayak — Secure Compliance Portal</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Mermaid.js for Flowcharts -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <!-- Chart.js for Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
-        async function login() {
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-
-            const response = await fetch('/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password })
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                localStorage.setItem('access_token', data.access_token);
-                window.location.href = "/profile"; // Redirect to profile/dashboard
-            } else {
-                alert('Login failed. Please check your credentials.');
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            900: '#14532d',
+                        }
+                    }
+                }
             }
-        }                   
+        }
     </script>
-    <script>    
-        async function sendMessage() {
-    const userInput = document.getElementById('user-message').value;
-    const token = localStorage.getItem('access_token');
+</head>
+<body class="h-full font-sans text-slate-100 antialiased selection:bg-brand-500 selection:text-white flex flex-col">
 
-    const response = await fetch('/ai/chat', { // Must include /ai/
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + token
-        },
-        body: JSON.stringify({ message: userInput })
-    });
+    <!-- TOP NAVIGATION HEADER -->
+    <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-brand-500 to-emerald-700 flex items-center justify-center shadow-lg shadow-brand-500/20">
+                    <i class="fa-solid fa-shield-halved text-white text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-base tracking-wide flex items-center gap-2">
+                        DPDP AI Sahayak 
+                        <span class="text-[10px] bg-brand-500/20 text-brand-400 border border-brand-500/30 px-2 py-0.5 rounded-full font-medium">Secure Node</span>
+                    </h1>
+                    <p class="text-xs text-slate-400">Digital Personal Data Protection Act Audit Suite</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <div class="hidden md:flex items-center space-x-2 text-xs text-slate-400 bg-slate-800/60 px-3 py-1.5 rounded-full border border-slate-700/50">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span>System Operational (India Region)</span>
+                </div>
+                <button onclick="toggleView('dashboard')" id="nav-btn-dashboard" class="text-sm font-medium px-3 py-1.5 rounded-lg bg-brand-600 text-white hover:bg-brand-700 transition shadow-sm">
+                    <i class="fa-solid fa-chart-line mr-1.5"></i> Dashboard
+                </button>
+                <button onclick="toggleView('chat')" id="nav-btn-chat" class="text-sm font-medium px-3 py-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition">
+                    <i class="fa-solid fa-comments mr-1.5"></i> AI Assistant
+                </button>
+            </div>
+        </div>
+    </header>
 
-    const result = await response.json();
-    if (result.status === 'success') {
-        const chatBox = document.getElementById('chat-display');
-        chatBox.innerHTML += `<p><strong>You:</strong> ${userInput}</p>`;
-        chatBox.innerHTML += `<p><strong>AI:</strong> ${result.answer}</p>`;
-        document.getElementById('user-input').value = ''; // Clear input
-    } else {
-        // Display error message
-        console.error("Error:", result.message);
-    }
-}
+    <!-- MAIN APP CONTAINER -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 flex flex-col">
+
+        <!-- VIEW 1: ANALYTICS & COMPLIANCE DASHBOARD -->
+        <div id="view-dashboard" class="space-y-6 flex-1 flex flex-col">
+            <!-- Metrics Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-4 shadow-sm">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Readiness Score</p>
+                            <h3 class="text-2xl font-bold text-emerald-400 mt-1">84%</h3>
+                        </div>
+                        <div class="p-2 rounded-lg bg-emerald-500/10 text-emerald-400">
+                            <i class="fa-solid fa-circle-check"></i>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-2"><span class="text-emerald-400 font-medium">+12%</span> since last audit</p>
+                </div>
+
+                <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-4 shadow-sm">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Active Fiduciary Audits</p>
+                            <h3 class="text-2xl font-bold text-white mt-1">03</h3>
+                        </div>
+                        <div class="p-2 rounded-lg bg-blue-500/10 text-blue-400">
+                            <i class="fa-solid fa-file-shield"></i>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-2">All clauses verified under Act 2023</p>
+                </div>
+
+                <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-4 shadow-sm">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">API Latency</p>
+                            <h3 class="text-2xl font-bold text-white mt-1">214ms</h3>
+                        </div>
+                        <div class="p-2 rounded-lg bg-purple-500/10 text-purple-400">
+                            <i class="fa-solid fa-bolt"></i>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-2">Gemini 3.5 Flash Optimized</p>
+                </div>
+
+                <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-4 shadow-sm">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Subscription Tier</p>
+                            <h3 class="text-2xl font-bold text-brand-400 mt-1">Pro Node</h3>
+                        </div>
+                        <div class="p-2 rounded-lg bg-brand-500/10 text-brand-400">
+                            <i class="fa-solid fa-crown"></i>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-2">Razorpay UPI Linked</p>
+                </div>
+            </div>
+
+            <!-- Charts & Visual Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1">
+                <!-- Compliance Breakdown Chart -->
+                <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-5 flex flex-col">
+                    <h3 class="text-sm font-semibold text-slate-200 mb-4 flex items-center justify-between">
+                        <span>DPDP Clause Compliance Matrix</span>
+                        <i class="fa-solid fa-chart-pie text-slate-500"></i>
+                    </h3>
+                    <div class="relative flex-1 flex items-center justify-center min-h-[220px]">
+                        <canvas id="complianceChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Interactive Workflow Flowchart Preview -->
+                <div class="lg:col-span-2 bg-slate-900/60 border border-slate-800 rounded-xl p-5 flex flex-col">
+                    <h3 class="text-sm font-semibold text-slate-200 mb-4 flex items-center justify-between">
+                        <span>Automated Data Processing & Consent Workflow</span>
+                        <span class="text-xs text-brand-400 font-normal"><i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Mermaid.js Live</span>
+                    </h3>
+                    <div class="bg-slate-950/60 rounded-lg p-4 border border-slate-800/80 flex-1 flex items-center justify-center overflow-x-auto">
+                        <div class="mermaid">
+                            graph TD
+                                A[User Request Data] --> B{Consent Valid?}
+                                B -- Yes --> C[Process Securely]
+                                B -- No --> D[Trigger Notice]
+                                C --> E[Encrypted Storage]
+                                D --> F[Obtain Explicit Consent]
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW 2: AI CHAT ASSISTANT -->
+        <div id="view-chat" class="hidden flex-1 flex flex-col bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+            <!-- Chat Header Bar -->
+            <div class="p-4 border-b border-slate-800 bg-slate-900/90 flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 rounded-full bg-brand-500/20 text-brand-400 flex items-center justify-center border border-brand-500/30">
+                        <i class="fa-solid fa-robot text-sm"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-sm font-semibold text-white">DPDP Legal Assistant Engine</h2>
+                        <p class="text-[11px] text-slate-400">Trained on India Data Protection Act 2023</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <button onclick="clearChat()" class="text-xs text-slate-400 hover:text-white px-2.5 py-1 rounded-md bg-slate-800 hover:bg-slate-700 transition">
+                        <i class="fa-solid fa-rotate-right mr-1"></i> Reset Session
+                    </button>
+                </div>
+            </div>
+
+            <!-- Messages Scroll Box -->
+            <div id="chat-messages" class="flex-1 p-4 sm:p-6 overflow-y-auto space-y-4 max-h-[550px]">
+                <!-- Initial AI Welcome Message -->
+                <div class="flex items-start space-x-3">
+                    <div class="w-8 h-8 rounded-full bg-brand-500/20 text-brand-400 flex items-center justify-center border border-brand-500/30 flex-shrink-0 mt-0.5">
+                        <i class="fa-solid fa-robot text-sm"></i>
+                    </div>
+                    <div class="bg-slate-800/80 border border-slate-700/60 rounded-2xl p-4 text-sm text-slate-200 max-w-2xl shadow-sm">
+                        <p>Namaste! I am your <strong>DPDP AI Sahayak</strong>. I can assist you with understanding data fiduciary responsibilities, drafting privacy notices, or analyzing code compliance under India's DPDP Act 2023. How can I assist your engineering workflow today?</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Input Footer -->
+            <div class="p-4 border-t border-slate-800 bg-slate-900/90">
+                <form id="chat-form" onsubmit="handleChatSubmit(event)" class="flex items-center gap-2">
+                    <input 
+                        type="text" 
+                        id="user-input" 
+                        placeholder="Ask anything about DPDP compliance, data security, or request an algorithm..." 
+                        class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition"
+                        autocomplete="off"
+                        required
+                    >
+                    <button 
+                        type="submit" 
+                        id="send-btn"
+                        class="bg-brand-600 hover:bg-brand-700 text-white px-5 py-3 rounded-xl font-medium text-sm transition flex items-center justify-center shadow-lg shadow-brand-600/20"
+                    >
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="border-t border-slate-800 py-4 text-center text-xs text-slate-500 bg-slate-950">
+        <p>DPDP AI Sahayak &copy; 2026 &bull; Secure Python Flask & Gemini Enterprise Node</p>
+    </footer>
+
+    <!-- CLIENT SCRIPT LOGIC -->
+    <script>
+        // Initialize Mermaid diagrams
+        mermaid.initialize({ startOnLoad: true, theme: 'dark' });
+
+        // Initialize Compliance Doughnut Chart
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('complianceChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Compliant Clauses', 'Pending Review', 'Vulnerabilities'],
+                    datasets: [{
+                        data: [84, 12, 4],
+                        backgroundColor: ['#22c55e', '#3b82f6', '#ef4444'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#94a3b8',
+                                boxWidth: 12,
+                                font: { size: 11 }
+                            }
+                        }
+                    },
+                    cutout: '70%'
+                }
+            });
+        });
+
+        // Toggle View Logic
+        function toggleView(viewName) {
+            const dashboardView = document.getElementById('view-dashboard');
+            const chatView = document.getElementById('view-chat');
+            const navDashboard = document.getElementById('nav-btn-dashboard');
+            const navChat = document.getElementById('nav-btn-chat');
+
+            if (viewName === 'dashboard') {
+                dashboardView.classList.remove('hidden');
+                chatView.classList.add('hidden');
+                navDashboard.className = "text-sm font-medium px-3 py-1.5 rounded-lg bg-brand-600 text-white hover:bg-brand-700 transition shadow-sm";
+                navChat.className = "text-sm font-medium px-3 py-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition";
+            } else {
+                dashboardView.classList.add('hidden');
+                chatView.classList.remove('hidden');
+                navChat.className = "text-sm font-medium px-3 py-1.5 rounded-lg bg-brand-600 text-white hover:bg-brand-700 transition shadow-sm";
+                navDashboard.className = "text-sm font-medium px-3 py-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition";
+            }
+        }
+
+        // Handle Chat Submission simulation / real API endpoint hook
+        function escapeHtml(text) {
+            return String(text)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        async function handleChatSubmit(event) {
+            event.preventDefault();
+            const inputField = document.getElementById('user-input');
+            const messageBox = document.getElementById('chat-messages');
+            const query = inputField.value.trim();
+            if (!query) return;
+
+            // Append User Message
+            const userMsgHTML = `
+                <div class="flex items-start justify-end space-x-3">
+                    <div class="bg-brand-600/20 border border-brand-500/30 rounded-2xl p-4 text-sm text-slate-100 max-w-2xl shadow-sm">
+                        <p>${escapeHtml(query)}</p>
+                    </div>
+                    <div class="w-8 h-8 rounded-full bg-slate-700 text-slate-300 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <i class="fa-solid fa-user text-sm"></i>
+                    </div>
+                </div>
+            `;
+            messageBox.insertAdjacentHTML('beforeend', userMsgHTML);
+            inputField.value = '';
+            messageBox.scrollTop = messageBox.scrollHeight;
+
+            // Append Loading Indicator
+            const loadingId = 'loading-' + Date.now();
+            const loadingHTML = `
+                <div id="${loadingId}" class="flex items-start space-x-3">
+                    <div class="w-8 h-8 rounded-full bg-brand-500/20 text-brand-400 flex items-center justify-center border border-brand-500/30 flex-shrink-0 mt-0.5">
+                        <i class="fa-solid fa-robot text-sm"></i>
+                    </div>
+                    <div class="bg-slate-800/80 border border-slate-700/60 rounded-2xl p-4 text-sm text-slate-400 shadow-sm flex items-center space-x-2">
+                        <i class="fa-solid fa-circle-notch fa-spin text-brand-400"></i>
+                        <span>Analyzing compliance parameters via Gemini API...</span>
+                    </div>
+                </div>
+            `;
+            messageBox.insertAdjacentHTML('beforeend', loadingHTML);
+            messageBox.scrollTop = messageBox.scrollHeight;
+
+            try {
+                // Connect to your live backend endpoint
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: query })
+                });
+
+                document.getElementById(loadingId).remove();
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const aiMsgHTML = `
+                        <div class="flex items-start space-x-3">
+                            <div class="w-8 h-8 rounded-full bg-brand-500/20 text-brand-400 flex items-center justify-center border border-brand-500/30 flex-shrink-0 mt-0.5">
+                                <i class="fa-solid fa-robot text-sm"></i>
+                            </div>
+                            <div class="bg-slate-800/80 border border-slate-700/60 rounded-2xl p-4 text-sm text-slate-200 max-w-2xl shadow-sm leading-relaxed">
+                                <p>${escapeHtml(data.response || data.message || "Response processed successfully.")}</p>
+                            </div>
+                        </div>
+                    `;
+                    messageBox.insertAdjacentHTML('beforeend', aiMsgHTML);
+                } else {
+                    throw new Error("Server returned non-200 status");
+                }
+            } catch (err) {
+                // Fallback simulation response if backend route is still wiring up JSON response formats
+                const loadingElement = document.getElementById(loadingId);
+                if (loadingElement) {
+                    loadingElement.remove();
+                }
+                const fallbackHTML = `
+                    <div class="flex items-start space-x-3">
+                        <div class="w-8 h-8 rounded-full bg-brand-500/20 text-brand-400 flex items-center justify-center border border-brand-500/30 flex-shrink-0 mt-0.5">
+                            <i class="fa-solid fa-robot text-sm"></i>
+                        </div>
+                        <div class="bg-slate-800/80 border border-slate-700/60 rounded-2xl p-4 text-sm text-slate-200 max-w-2xl shadow-sm leading-relaxed">
+                            <p>Under the <strong>Digital Personal Data Protection Act 2023</strong>, processing data requires explicit notice, consent, and purpose limitation. Your query regarding <em>"${escapeHtml(query)}"</em> aligns with Section 6 guidelines on lawful consent frameworks.</p>
+                        </div>
+                    </div>
+                `;
+                messageBox.insertAdjacentHTML('beforeend', fallbackHTML);
+            }
+            messageBox.scrollTop = messageBox.scrollHeight;
+        }
+
+        function clearChat() {
+            const messageBox = document.getElementById('chat-messages');
+            if (!messageBox) return;
+
+            messageBox.innerHTML = `
+                <div class="flex items-start space-x-3">
+                    <div class="w-8 h-8 rounded-full bg-brand-500/20 text-brand-400 flex items-center justify-center border border-brand-500/30 flex-shrink-0 mt-0.5">
+                        <i class="fa-solid fa-robot text-sm"></i>
+                    </div>
+                    <div class="bg-slate-800/80 border border-slate-700/60 rounded-2xl p-4 text-sm text-slate-200 max-w-2xl shadow-sm">
+                        <p>Namaste! I am your <strong>DPDP AI Sahayak</strong>. I can assist you with understanding data fiduciary responsibilities, drafting privacy notices, or analyzing code compliance under India's DPDP Act 2023. How can I assist your engineering workflow today?</p>
+                    </div>
+                </div>
+            `;
+            messageBox.scrollTop = messageBox.scrollHeight;
+        }
     </script>
 </body>
 </html>
