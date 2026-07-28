@@ -10,7 +10,6 @@ ai_bp = Blueprint('ai', __name__)
 # Replace with your actual key starting with AIzaSy...
 load_dotenv()
 client = genai.Client(api_key=os.getenv("GOOGLE_API_KEY"))
-
 @ai_bp.route('/chat', methods=['POST'])
 @token_required
 def chat(current_user):
