@@ -17,7 +17,7 @@ client = genai.Client(api_key=api_key)
 limiter = Limiter(key_func=get_remote_address)
 
 @ai_bp.route('/chat', methods=['POST'])
-@limiter.limit("10 per minute")   # Caps abuse per IP without requiring login tokens
+@limiter.limit("10 per minute")
 def chat():
     data = request.get_json()
     user_message = data.get('message')
@@ -47,7 +47,7 @@ def upload_file():
         return jsonify({"status": "error", "message": "No selected file"}), 400
     
     try:
-        # Read the content of the uploaded text/policy file
+        # Read the content of the uploaded text/policy file safely
         file_content = file.read().decode('utf-8', errors='ignore')
         
         # Use Gemini to analyze the policy document under DPDP Act 2023 guidelines
