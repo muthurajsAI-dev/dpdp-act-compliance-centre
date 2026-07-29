@@ -443,7 +443,7 @@
             formData.append('file', file);
 
             try {
-                const response = await fetch('/ai/upload', {
+                const response = await fetch('/api/upload', {
                     method: 'POST',
                     headers: token ? { 'Authorization': `Bearer ${token}` } : {},
                     body: formData
