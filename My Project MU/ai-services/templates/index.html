@@ -33,15 +33,15 @@
                 <span class="font-bold text-lg tracking-wide text-white">DPDP Sahayak</span>
             </div>
             <nav class="p-4 space-y-1 text-sm">
-                <a href="#" class="flex items-center space-x-3 px-4 py-2.5 rounded-lg bg-blue-600/20 text-brandblue font-medium">🏠 <span>Dashboard</span></a>
-                <a href="#" class="flex items-center space-x-3 px-4 py-2.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white">📄 <span>Compliance Audit</span></a>
-                <a href="#" class="flex items-center space-x-3 px-4 py-2.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white">🤖 <span>AI Assistant</span></a>
-                <a href="#" class="flex items-center space-x-3 px-4 py-2.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white">📑 <span>Reports</span></a>
-                <a href="#" class="flex items-center space-x-3 px-4 py-2.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white">👥 <span>Data Principals</span></a>
-                <a href="#" class="flex items-center space-x-3 px-4 py-2.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white">🔒 <span>Consent Manager</span></a>
-                <a href="#" class="flex items-center space-x-3 px-4 py-2.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white">⚠ <span>Risk Monitor</span></a>
-                <a href="#" class="flex items-center space-x-3 px-4 py-2.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white">📊 <span>Analytics</span></a>
-                <a href="#" class="flex items-center space-x-3 px-4 py-2.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white">⚙ <span>Settings</span></a>
+                <a href="#" onclick="switchTab('dashboard')" id="nav-dashboard" class="flex items-center space-x-3 px-4 py-2.5 rounded-lg bg-blue-600/20 text-brandblue font-medium">🏠 <span>Dashboard</span></a>
+                <a href="#" onclick="switchTab('audit')" id="nav-audit" class="flex items-center space-x-3 px-4 py-2.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white">📄 <span>Compliance Audit</span></a>
+                <a href="#" onclick="switchTab('assistant')" id="nav-assistant" class="flex items-center space-x-3 px-4 py-2.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white">🤖 <span>AI Assistant</span></a>
+                <a href="#" onclick="switchTab('reports')" id="nav-reports" class="flex items-center space-x-3 px-4 py-2.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white">📑 <span>Reports</span></a>
+                <a href="#" onclick="switchTab('principals')" id="nav-principals" class="flex items-center space-x-3 px-4 py-2.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white">👥 <span>Data Principals</span></a>
+                <a href="#" onclick="switchTab('consent')" id="nav-consent" class="flex items-center space-x-3 px-4 py-2.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white">🔒 <span>Consent Manager</span></a>
+                <a href="#" onclick="switchTab('risks')" id="nav-risks" class="flex items-center space-x-3 px-4 py-2.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white">⚠ <span>Risk Monitor</span></a>
+                <a href="#" onclick="switchTab('analytics')" id="nav-analytics" class="flex items-center space-x-3 px-4 py-2.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white">📊 <span>Analytics</span></a>
+                <a href="#" onclick="switchTab('settings')" id="nav-settings" class="flex items-center space-x-3 px-4 py-2.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white">⚙ <span>Settings</span></a>
             </nav>
         </div>
         <div class="p-4 border-t border-slate-800 text-xs text-slate-500 flex justify-between items-center">
@@ -71,7 +71,7 @@
         </header>
 
         <!-- SCROLLABLE DASHBOARD BODY -->
-        <main class="flex-1 overflow-y-auto p-6 space-y-6 bg-darkbg">
+        <main class="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 bg-darkbg">
 
             <!-- TOP KPI CARDS GRID -->
             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
@@ -110,7 +110,7 @@
                         <h2 class="font-semibold text-white text-base">📈 Compliance Trend (30 Days)</h2>
                         <span class="text-xs text-slate-400 bg-slate-800 px-2.5 py-1 rounded">Updated Real-time</span>
                     </div>
-                    <div class="h-64 relative">
+                    <div class="h-48 relative">
                         <canvas id="trendChart"></canvas>
                     </div>
                 </div>
@@ -214,7 +214,7 @@
         </main>
     </div>
 
-    <!-- CLIENT SIDE SCRIPTING FOR INTERACTIVITY & CHARTS -->
+    <!-- CLIENT SIDE SCRIPTING -->
     <script>
         // Initialize 30-Day Compliance Trend Chart
         const ctx = document.getElementById('trendChart').getContext('2d');
@@ -243,6 +243,36 @@
             }
         });
 
+        // Interactive Sidebar Navigation Tabs
+        function switchTab(tabName) {
+            const mainArea = document.querySelector('main');
+            
+            document.querySelectorAll('aside nav a').forEach(el => {
+                el.classList.remove('bg-blue-600/20', 'text-brandblue', 'font-medium');
+                el.classList.add('text-slate-400');
+            });
+            const activeNav = document.getElementById(`nav-${tabName}`);
+            if (activeNav) {
+                activeNav.classList.add('bg-blue-600/20', 'text-brandblue', 'font-medium');
+                activeNav.classList.remove('text-slate-400');
+            }
+
+            if (tabName === 'dashboard') {
+                location.reload();
+            } else {
+                mainArea.innerHTML = `
+                    <div class="bg-cardbg p-6 rounded-xl border border-slate-800">
+                        <h1 class="text-xl font-bold text-white capitalize">Module: ${tabName}</h1>
+                        <p class="text-slate-400 mt-2">Active enterprise module interface for ${tabName} under India's DPDP Act 2023.</p>
+                        <div class="mt-6 p-4 bg-darkbg rounded-lg border border-slate-800 text-sm text-slate-300">
+                            <p>⚡ Live Node Status: Operational</p>
+                            <button onclick="switchTab('dashboard')" class="mt-4 px-4 py-2 bg-brandblue text-white rounded-lg text-xs font-medium">← Back to Dashboard</button>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
         // Chat functionality connected to backend /ai/chat
         async function sendQuery() {
             const inputField = document.getElementById('userInput');
@@ -269,14 +299,12 @@
             }
         }
 
-        // File upload functionality — tolerant to both `this` and `event` callers
+        // File upload functionality — robust and endpoint-tolerant
         async function handleFileUpload(inputOrEvent) {
             let file;
             try {
                 if (!inputOrEvent) return;
-                // caller passed the <input> element
                 if (inputOrEvent.files) file = inputOrEvent.files[0];
-                // caller passed an event (e.g., onchange="handleFileUpload(event)")
                 else if (inputOrEvent.target && inputOrEvent.target.files) file = inputOrEvent.target.files[0];
                 if (!file) return;
 
@@ -285,16 +313,17 @@
                 const formData = new FormData();
                 formData.append('file', file);
 
-                // Try primary endpoint first, with fallback to /api/upload
-                const endpoints = ['/ai/upload', '/api/upload'];
-                let res, data;
+                const endpoints = ['/api/upload', '/ai/upload'];
+                let res = null;
+                let data = null;
                 for (const ep of endpoints) {
                     try {
                         res = await fetch(ep, { method: 'POST', body: formData });
                         data = await res.json().catch(() => null);
-                        if (res.ok) break; // success
+                        if (res.ok) break;
                     } catch (e) {
-                        // try next endpoint
+                        res = null;
+                        data = null;
                         continue;
                     }
                 }
@@ -315,11 +344,13 @@
             }
         }
 
-        function appendMessage(sender, text, styleClass) {
+        function appendMessage(sender, text, styleClass = '') {
             const chatContainer = document.getElementById('chatContainer');
+            if (!chatContainer) return;
             const msgDiv = document.createElement('div');
-            msgDiv.className = `p-3 rounded-lg border border-slate-800 ${styleClass}`;
-            msgDiv.innerHTML = `<p class="text-xs font-semibold mb-1 opacity-75">${sender}</p><p class="whitespace-pre-line">${text}</p>`;
+            const safeClass = String(styleClass || '').trim();
+            msgDiv.className = `p-3 rounded-lg border border-slate-800 ${safeClass}`.trim();
+            msgDiv.innerHTML = `<p class="text-xs font-semibold mb-1 opacity-75">${escapeHtml(sender)}</p><p class="whitespace-pre-line">${escapeHtml(String(text))}</p>`;
             chatContainer.appendChild(msgDiv);
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
@@ -331,6 +362,7 @@
         function emailReport() {
             alert("Audit report package dispatched to administrator email.");
         }
+
     </script>
 </body>
 </html>
