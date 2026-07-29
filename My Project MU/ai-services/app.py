@@ -3,7 +3,7 @@ import jwt
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, jsonify
 from datetime import datetime, timedelta, timezone
-from routes.ai_routes import ai_bp, limiter
+from routes.ai_routes import ai_bp, limiter, upload_file
 from google import genai
 
 load_dotenv()
@@ -51,23 +51,7 @@ def login():
 
 @app.route('/api/upload', methods=['POST'])
 def handle_file_upload():
-    if 'file' not in request.files:
-        return jsonify({"error": "No file part provided"}), 400
-    
-    uploaded_file = request.files['file']
-    if uploaded_file.filename == '':
-        return jsonify({"error": "No selected file"}), 400
-
-    try:
-        file_bytes = uploaded_file.read()
-        file_text = file_bytes.decode('utf-8', errors='ignore')
-        response = client.models.generate_content(
-            model='gemini-2.5-flash',
-            contents=f"Analyze this uploaded document for compliance under India's DPDP Act 2023. Give a clear risk summary:\n\n{file_text[:4000]}"
-        )
-        return jsonify({"status": "success", "analysis": response.text})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    return upload_file()
 
 if __name__ == '__main__':
     app.run(debug=os.getenv("FLASK_DEBUG", "False") == "True")

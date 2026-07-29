@@ -5,6 +5,21 @@ from google import genai
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 
+# Optional libraries for file parsing (install via pip if needed)
+PdfReader = None
+docx = None
+try:
+    import importlib
+    PdfReader = importlib.import_module('pypdf').PdfReader
+except ImportError:
+    PdfReader = None
+
+try:
+    import importlib
+    docx = importlib.import_module('docx')
+except ImportError:
+    docx = None
+
 ai_bp = Blueprint('ai_bp', __name__)
 
 load_dotenv()
@@ -46,14 +61,51 @@ def upload_file():
     if file.filename == '':
         return jsonify({"status": "error", "message": "No selected file"}), 400
     
+    filename = file.filename.lower()
+    extracted_text = ""
+
     try:
-        # Read the content of the uploaded text/policy file safely
-        file_content = file.read().decode('utf-8', errors='ignore')
+        # 1. Handle PDF files
+        if filename.endswith('.pdf'):
+            if PdfReader is None:
+                return jsonify({"status": "error", "message": "Install the pypdf package to parse PDF uploads."}), 400
+            reader = PdfReader(file)
+            for page in reader.pages:
+                text = page.extract_text()
+                if text:
+                    extracted_text += text + "\n"
         
-        # Use Gemini to analyze the policy document under DPDP Act 2023 guidelines
+        # 2. Handle Word documents (.docx)
+        elif filename.endswith('.docx'):
+            if docx is None:
+                return jsonify({"status": "error", "message": "Install python-docx to parse DOCX uploads."}), 400
+            doc = docx.Document(file)
+            for para in doc.paragraphs:
+                extracted_text += para.text + "\n"
+                
+        # 3. Handle Images (.jpg, .jpeg, .png)
+        elif filename.endswith(('.jpg', '.jpeg', '.png')):
+            image_bytes = file.read()
+            response = client.models.generate_content(
+                model='gemini-2.5-flash',
+                contents=[
+                    image_bytes,
+                    "Analyze this uploaded policy document or image for compliance under India's DPDP Act 2023. Give a concise summary of compliance status and areas to improve:"
+                ]
+            )
+            return jsonify({"status": "success", "analysis": response.text})
+
+        # 4. Handle Text files (.txt) and fallback
+        else:
+            extracted_text = file.read().decode('utf-8', errors='ignore')
+
+        if not extracted_text.strip():
+            return jsonify({"status": "error", "message": "Could not extract text from the uploaded file."}), 400
+
+        # Send extracted text to Gemini
         response = client.models.generate_content(
             model='gemini-2.5-flash',
-            contents=f"Analyze this uploaded policy document for compliance under India's DPDP Act 2023. Give a concise summary of compliance status and areas to improve:\n\n{file_content[:4000]}"
+            contents=f"Analyze this uploaded policy document for compliance under India's DPDP Act 2023. Give a concise summary of compliance status and areas to improve:\n\n{extracted_text[:4000]}"
         )
         
         return jsonify({
