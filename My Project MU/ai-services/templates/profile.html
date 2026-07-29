@@ -43,7 +43,7 @@
 
                 const result = await response.json();
                 if (result.status === "success") {
-                    appendMessage('ai', result.answer);
+                    appendMessage('ai', result.response || result.answer || 'No response received.');
                 } else {
                     appendMessage('ai', "Error: " + result.message);
                 }

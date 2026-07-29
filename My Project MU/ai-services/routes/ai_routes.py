@@ -19,7 +19,7 @@ limiter = Limiter(key_func=get_remote_address)
 @ai_bp.route('/chat', methods=['POST'])
 @limiter.limit("10 per minute")
 def chat():
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
     user_message = data.get('message')
     
     if not user_message:

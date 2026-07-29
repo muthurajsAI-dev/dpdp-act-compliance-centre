@@ -401,10 +401,83 @@
         }
 
         // Handle File Upload
-        function handleFileUpload(event) {
+        async function handleFileUpload(event) {
             const file = event.target.files[0];
-            if (file) {
-                alert('File uploaded: ' + file.name + '\n\nNote: Implement backend file processing');
+            if (!file) {
+                return;
+            }
+
+            const token = localStorage.getItem('access_token');
+            const messageBox = document.getElementById('chat-messages');
+            const uploadId = 'upload-' + Date.now();
+            const safeFileName = escapeHtml(file.name);
+
+            const userFileHTML = `
+                <div class="flex items-start justify-end space-x-3">
+                    <div class="bg-brand-600/20 border border-brand-500/30 rounded-2xl p-4 text-sm text-slate-100 max-w-2xl shadow-sm">
+                        <p><strong>File uploaded:</strong> ${safeFileName}</p>
+                        <p class="text-xs text-slate-400 mt-2">Analyzing policy document for DPDP Act compliance...</p>
+                    </div>
+                    <div class="w-8 h-8 rounded-full bg-slate-700 text-slate-300 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <i class="fa-solid fa-file-lines text-sm"></i>
+                    </div>
+                </div>
+            `;
+            messageBox.insertAdjacentHTML('beforeend', userFileHTML);
+            messageBox.scrollTop = messageBox.scrollHeight;
+
+            const loadingHTML = `
+                <div id="${uploadId}" class="flex items-start space-x-3">
+                    <div class="w-8 h-8 rounded-full bg-brand-500/20 text-brand-400 flex items-center justify-center border border-brand-500/30 flex-shrink-0 mt-0.5">
+                        <i class="fa-solid fa-circle-notch fa-spin text-brand-400"></i>
+                    </div>
+                    <div class="bg-slate-800/80 border border-slate-700/60 rounded-2xl p-4 text-sm text-slate-400 shadow-sm flex items-center space-x-2">
+                        <span>Processing uploaded document...</span>
+                    </div>
+                </div>
+            `;
+            messageBox.insertAdjacentHTML('beforeend', loadingHTML);
+            messageBox.scrollTop = messageBox.scrollHeight;
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch('/ai/upload', {
+                    method: 'POST',
+                    headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+                    body: formData
+                });
+
+                document.getElementById(uploadId).remove();
+
+                if (!response.ok) {
+                    const err = await response.json().catch(() => null);
+                    const message = err?.message || err?.error || response.statusText;
+                    alert('Upload failed: ' + message);
+                    return;
+                }
+
+                const data = await response.json();
+                const aiResponse = data.analysis || data.response || 'No analysis returned.';
+                const aiMsgHTML = `
+                    <div class="flex items-start space-x-3">
+                        <div class="w-8 h-8 rounded-full bg-brand-500/20 text-brand-400 flex items-center justify-center border border-brand-500/30 flex-shrink-0 mt-0.5">
+                            <i class="fa-solid fa-robot text-sm"></i>
+                        </div>
+                        <div class="bg-slate-800/80 border border-slate-700/60 rounded-2xl p-4 text-sm text-slate-200 max-w-2xl shadow-sm">
+                            <p>${escapeHtml(aiResponse)}</p>
+                        </div>
+                    </div>
+                `;
+                messageBox.insertAdjacentHTML('beforeend', aiMsgHTML);
+                messageBox.scrollTop = messageBox.scrollHeight;
+            } catch (error) {
+                document.getElementById(uploadId).remove();
+                console.error('Upload error:', error);
+                alert('File upload failed: ' + error.message);
+            } finally {
+                event.target.value = '';
             }
         }
 

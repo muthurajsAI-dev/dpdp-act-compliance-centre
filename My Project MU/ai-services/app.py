@@ -18,8 +18,12 @@ app.config['SECRET_KEY'] = SECRET_KEY
 ADMIN_USER = os.getenv("ADMIN_USERNAME")
 ADMIN_PASS = os.getenv("ADMIN_PASSWORD")
 
-# Initialize Gemini Client (assumes GEMINI_API_KEY is in your environment variables)
-client = genai.Client()
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+if not GOOGLE_API_KEY:
+    raise RuntimeError("CRITICAL: GOOGLE_API_KEY is missing from environment settings!")
+
+# Initialize Gemini Client with the configured API key
+client = genai.Client(api_key=GOOGLE_API_KEY)
 
 limiter.init_app(app)
 
@@ -55,17 +59,13 @@ def handle_file_upload():
         return jsonify({"error": "No selected file"}), 400
 
     try:
-        # Read file bytes in-memory and send straight to Gemini
         file_bytes = uploaded_file.read()
-        
+        file_text = file_bytes.decode('utf-8', errors='ignore')
         response = client.models.generate_content(
             model='gemini-2.5-flash',
-            contents=[
-                "Analyze this uploaded document for compliance under India's DPDP Act 2023. Give a clear risk summary:",
-                file_bytes
-            ]
+            contents=f"Analyze this uploaded document for compliance under India's DPDP Act 2023. Give a clear risk summary:\n\n{file_text[:4000]}"
         )
-        return jsonify({"analysis": response.text})
+        return jsonify({"status": "success", "analysis": response.text})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
