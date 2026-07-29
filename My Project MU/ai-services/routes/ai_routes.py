@@ -35,3 +35,32 @@ def chat():
         if "429" in str(e):
             return jsonify({"status": "error", "message": "Limit reached. Please wait 60 seconds."}), 429
         return jsonify({"status": "error", "message": str(e)}), 500
+
+@ai_bp.route('/upload', methods=['POST'])
+@limiter.limit("5 per minute")
+def upload_file():
+    if 'file' not in request.files:
+        return jsonify({"status": "error", "message": "No file part in the request"}), 400
+    
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({"status": "error", "message": "No selected file"}), 400
+    
+    try:
+        # Read the content of the uploaded text/policy file
+        file_content = file.read().decode('utf-8', errors='ignore')
+        
+        # Use Gemini to analyze the policy document under DPDP Act 2023 guidelines
+        response = client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=f"Analyze this uploaded policy document for compliance under India's DPDP Act 2023. Give a concise summary of compliance status and areas to improve:\n\n{file_content[:4000]}"
+        )
+        
+        return jsonify({
+            "status": "success", 
+            "analysis": response.text
+        })
+    except Exception as e:
+        if "429" in str(e):
+            return jsonify({"status": "error", "message": "Limit reached. Please wait 60 seconds."}), 429
+        return jsonify({"status": "error", "message": str(e)}), 500
