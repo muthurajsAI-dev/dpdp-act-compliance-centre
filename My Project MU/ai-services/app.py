@@ -3,8 +3,9 @@ import jwt
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, jsonify
 from datetime import datetime, timedelta, timezone
-from routes.ai_routes import ai_bp, limiter, upload_file
-from google import genai
+from werkzeug.security import generate_password_hash, check_password_hash
+from routes.ai_routes import ai_bp, limiter
+from database import init_db, create_user, get_user_by_email
 
 load_dotenv()
 
@@ -15,19 +16,10 @@ if not SECRET_KEY:
     raise RuntimeError("CRITICAL: SECRET_KEY is missing from environment settings!")
 app.config['SECRET_KEY'] = SECRET_KEY
 
-ADMIN_USER = os.getenv("ADMIN_USERNAME")
-ADMIN_PASS = os.getenv("ADMIN_PASSWORD")
-
-GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
-if not GOOGLE_API_KEY:
-    raise RuntimeError("CRITICAL: GOOGLE_API_KEY is missing from environment settings!")
-
-# Initialize Gemini Client with the configured API key
-client = genai.Client(api_key=GOOGLE_API_KEY)
-
 limiter.init_app(app)
-
 app.register_blueprint(ai_bp, url_prefix='/ai')
+
+init_db()  # creates users table if it doesn't exist yet
 
 @app.route('/')
 def index():
@@ -37,21 +29,44 @@ def index():
 def profile():
     return render_template('profile.html')
 
+@app.route('/signup', methods=['POST'])
+@limiter.limit("5 per minute")
+def signup():
+    data = request.get_json()
+    email = data.get('email', '').strip().lower()
+    password = data.get('password', '')
+
+    if not email or '@' not in email:
+        return jsonify({"status": "error", "message": "Please enter a valid email"}), 400
+    if len(password) < 8:
+        return jsonify({"status": "error", "message": "Password must be at least 8 characters"}), 400
+
+    password_hash = generate_password_hash(password)
+    created = create_user(email, password_hash)
+
+    if not created:
+        return jsonify({"status": "error", "message": "An account with this email already exists"}), 409
+
+    return jsonify({"status": "success", "message": "Account created. Please sign in."})
+
 @app.route('/login', methods=['POST'])
 @limiter.limit("5 per minute")
 def login():
     data = request.get_json()
-    if data.get('username') == ADMIN_USER and data.get('password') == ADMIN_PASS:
-        token = jwt.encode({
-            'user': ADMIN_USER,
-            'exp': datetime.now(timezone.utc) + timedelta(hours=24)
-        }, app.config['SECRET_KEY'], algorithm='HS256')
-        return jsonify({"status": "success", "access_token": token})
-    return jsonify({"status": "error", "message": "Invalid credentials"}), 401
+    email = data.get('email', '').strip().lower()
+    password = data.get('password', '')
 
-@app.route('/api/upload', methods=['POST'])
-def handle_file_upload():
-    return upload_file()
+    user = get_user_by_email(email)
+
+    if not user or not check_password_hash(user['password_hash'], password):
+        return jsonify({"status": "error", "message": "Invalid email or password"}), 401
+
+    token = jwt.encode({
+        'email': user['email'],
+        'exp': datetime.now(timezone.utc) + timedelta(hours=24)
+    }, app.config['SECRET_KEY'], algorithm='HS256')
+
+    return jsonify({"status": "success", "access_token": token})
 
 if __name__ == '__main__':
     app.run(debug=os.getenv("FLASK_DEBUG", "False") == "True")
