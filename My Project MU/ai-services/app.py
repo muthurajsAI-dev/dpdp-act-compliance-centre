@@ -6,7 +6,7 @@ from datetime import datetime, timedelta, timezone
 from werkzeug.security import generate_password_hash, check_password_hash
 from routes.ai_routes import ai_bp, limiter
 from database import init_db, create_user, get_user_by_email
-
+from routes.audit_routes import audit_bp        
 load_dotenv()
 
 app = Flask(__name__)
@@ -18,6 +18,7 @@ app.config['SECRET_KEY'] = SECRET_KEY
 
 limiter.init_app(app)
 app.register_blueprint(ai_bp, url_prefix='/ai')
+app.register_blueprint(audit_bp, url_prefix='/audit')
 
 init_db()  # creates users table if it doesn't exist yet
 
