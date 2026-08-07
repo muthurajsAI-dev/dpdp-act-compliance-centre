@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Compliance Audit - DPDP AI Sahayak</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-900 text-white">
     <div class="flex h-screen">
@@ -14,26 +14,24 @@
                     <h1 class="text-2xl font-bold">Compliance Audit Trail</h1>
                     <p class="text-gray-400 text-sm">Review automated DPDP Act compliance assessments for all uploaded documents.</p>
                 </div>
-                <a href="{{ url_for('index') }}" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-sm font-medium transition-colors">Back to Chat</a>
+                <a href="/profile" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-sm font-medium transition-colors">Back to Chat</a>
             </header>
 
-            <!-- Metrics Summary Cards -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <div class="bg-gray-800 p-5 rounded-xl border border-gray-700">
                     <p class="text-gray-400 text-sm">Total Audited Documents</p>
-                    <h3 class="text-3xl font-bold mt-2">1</h3>
+                    <h3 class="text-3xl font-bold mt-2" id="totalCount">—</h3>
                 </div>
                 <div class="bg-gray-800 p-5 rounded-xl border border-gray-700">
                     <p class="text-gray-400 text-sm">Compliant Artifacts</p>
-                    <h3 class="text-3xl font-bold text-green-400 mt-2">1</h3>
+                    <h3 class="text-3xl font-bold text-green-400 mt-2" id="compliantCount">—</h3>
                 </div>
                 <div class="bg-gray-800 p-5 rounded-xl border border-gray-700">
                     <p class="text-gray-400 text-sm">Pending Reviews / Risks</p>
-                    <h3 class="text-3xl font-bold text-yellow-400 mt-2">0</h3>
+                    <h3 class="text-3xl font-bold text-yellow-400 mt-2" id="riskCount">—</h3>
                 </div>
             </div>
 
-            <!-- Audit Log Table -->
             <div class="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
                 <div class="p-5 border-b border-gray-700">
                     <h3 class="font-semibold">Recent Evaluations</h3>
@@ -43,27 +41,52 @@
                         <thead>
                             <tr class="bg-gray-700/50 text-gray-400 text-xs uppercase tracking-wider">
                                 <th class="p-4">Document Name</th>
-                                <th class="p-4">Category</th>
-                                <th class="p-4">DPDP Compliance Status</th>
+                                <th class="p-4">Summary</th>
                                 <th class="p-4">Timestamp</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-700 text-sm">
-                            <tr>
-                                <td class="p-4 font-medium">DeclarationCertificate.pdf</td>
-                                <td class="p-4 text-gray-300">Identity / Verification Form</td>
-                                <td class="p-4">
-                                    <span class="px-3 py-1 bg-green-500/10 text-green-400 rounded-full text-xs font-semibold border border-green-500/20">
-                                        Compliant
-                                    </span>
-                                </td>
-                                <td class="p-4 text-gray-400">August 7, 2026</td>
-                            </tr>
+                        <tbody class="divide-y divide-gray-700 text-sm" id="auditRows">
+                            <tr><td class="p-4 text-gray-500" colspan="3">Loading…</td></tr>
                         </tbody>
                     </table>
                 </div>
             </div>
         </main>
     </div>
+
+<script>
+    const token = sessionStorage.getItem('dpdp_token');
+    if (!token) window.location.href = '/';
+
+    async function loadAuditLogs() {
+        try {
+            const res = await fetch('/audit/logs', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+            const tbody = document.getElementById('auditRows');
+
+            if (res.ok && data.status === 'success' && data.logs.length > 0) {
+                document.getElementById('totalCount').textContent = data.logs.length;
+                document.getElementById('compliantCount').textContent = '—';
+                document.getElementById('riskCount').textContent = '—';
+                tbody.innerHTML = data.logs.map(log => `
+                    <tr>
+                        <td class="p-4 font-medium">${log.filename}</td>
+                        <td class="p-4 text-gray-300">${log.summary}</td>
+                        <td class="p-4 text-gray-400">${new Date(log.created_at).toLocaleDateString()}</td>
+                    </tr>
+                `).join('');
+            } else {
+                document.getElementById('totalCount').textContent = '0';
+                tbody.innerHTML = '<tr><td class="p-4 text-gray-500" colspan="3">No documents analyzed yet — upload one from the AI Assistant to get started.</td></tr>';
+            }
+        } catch (err) {
+            document.getElementById('auditRows').innerHTML = '<tr><td class="p-4 text-red-400" colspan="3">Could not reach the server.</td></tr>';
+        }
+    }
+
+    loadAuditLogs();
+</script>
 </body>
 </html>

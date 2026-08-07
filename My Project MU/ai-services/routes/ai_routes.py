@@ -7,7 +7,7 @@ from google import genai
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from middleware.auth import token_required
-from database import create_conversation, get_conversation, save_message, get_conversation_messages, get_user_conversations
+from database import create_conversation, get_conversation, save_message, get_conversation_messages, get_user_conversations, save_audit
 
 # Optional libraries for file parsing (loaded at runtime to avoid hard import errors)
 try:
@@ -132,6 +132,7 @@ def upload_file(current_user_email):
                     "Analyze this uploaded policy document or image for compliance under India's DPDP Act 2023. Give a concise summary of compliance status and areas to improve:"
                 ]
             )
+            save_audit(current_user_email, file.filename, response.text[:300])
             return jsonify({"status": "success", "analysis": response.text})
 
         else:
@@ -147,6 +148,8 @@ def upload_file(current_user_email):
             model='gemini-2.5-flash',
             contents=f"Analyze this uploaded policy document for compliance under India's DPDP Act 2023. Give a concise summary of compliance status and areas to improve:\n\n{extracted_text[:4000]}"
         )
+
+        save_audit(current_user_email, file.filename, response.text[:300])
 
         return jsonify({
             "status": "success",

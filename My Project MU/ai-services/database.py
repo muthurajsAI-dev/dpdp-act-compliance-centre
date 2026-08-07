@@ -1,7 +1,6 @@
 import sqlite3
 import os
 from datetime import datetime, timezone
-from database import session 
 
 DB_PATH = os.path.join(os.path.dirname(__file__), 'app_data.db')
 
@@ -9,20 +8,6 @@ def get_db():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
-    db=session()
-
-def init_db():
-    conn = get_db()
-    conn.execute('''
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            email TEXT UNIQUE NOT NULL,
-            password_hash TEXT NOT NULL,
-            created_at TEXT NOT NULL
-        )
-    ''')
-    conn.commit()
-    conn.close()
 
 def create_user(email, password_hash):
     conn = get_db()
@@ -72,6 +57,15 @@ def init_db():
             FOREIGN KEY (conversation_id) REFERENCES conversations (id)
         )
     ''')
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS audit_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_email TEXT NOT NULL,
+            filename TEXT NOT NULL,
+            summary TEXT NOT NULL,
+            created_at TEXT NOT NULL
+        )
+    ''')
     conn.commit()
     conn.close()
 
@@ -118,6 +112,24 @@ def get_conversation_messages(conversation_id):
     rows = conn.execute(
         'SELECT role, content FROM messages WHERE conversation_id = ? ORDER BY id ASC',
         (conversation_id,)
+    ).fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+def save_audit(user_email, filename, summary):
+    conn = get_db()
+    conn.execute(
+        'INSERT INTO audit_logs (user_email, filename, summary, created_at) VALUES (?, ?, ?, ?)',
+        (user_email, filename, summary, datetime.now(timezone.utc).isoformat())
+    )
+    conn.commit()
+    conn.close()
+
+def get_user_audits(user_email):
+    conn = get_db()
+    rows = conn.execute(
+        'SELECT filename, summary, created_at FROM audit_logs WHERE user_email = ? ORDER BY created_at DESC',
+        (user_email,)
     ).fetchall()
     conn.close()
     return [dict(r) for r in rows]
