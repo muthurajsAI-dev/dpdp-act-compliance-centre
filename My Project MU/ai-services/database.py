@@ -155,3 +155,17 @@ def delete_user_account(email):
     conn.execute('DELETE FROM users WHERE email = ?', (email,))
     conn.commit()
     conn.close()
+def init_chat_db():
+    conn = sqlite3.connect('your_database.db')
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS chats (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            session_id TEXT NOT NULL,
+            message TEXT NOT NULL,
+            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    conn.commit()
+    conn.close()
+    

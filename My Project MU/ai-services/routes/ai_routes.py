@@ -39,6 +39,15 @@ def list_conversations(current_user_email):
     conversations = get_user_conversations(current_user_email)
     return jsonify({"status": "success", "conversations": conversations})
 
+@ai_bp.route('/conversations/<int:conversation_id>/messages', methods=['GET'])
+@token_required
+def get_conversation_history(current_user_email, conversation_id):
+    conv = get_conversation(conversation_id, current_user_email)
+    if not conv:
+        return jsonify({"status": "error", "message": "Conversation not found"}), 404
+    messages = get_conversation_messages(conversation_id)
+    return jsonify({"status": "success", "messages": messages})
+
 
 @ai_bp.route('/chat', methods=['POST'])
 @limiter.limit("10 per minute")
