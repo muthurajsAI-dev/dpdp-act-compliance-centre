@@ -33,7 +33,7 @@
             <nav class="p-4 space-y-1 text-sm">
                 <a href="#" onclick="switchTab('dashboard')" id="nav-dashboard" class="flex items-center space-x-3 px-4 py-2.5 rounded-lg bg-blue-600/20 text-brandblue font-medium">🏠 <span>Dashboard</span></a>
                 <a href="/audit/compliance-audit" id="nav-audit" class="flex items-center space-x-3 px-4 py-2.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white">📄 <span>Compliance Audit</span></a>
-                <a href="#" onclick="switchTab('assistant')" id="nav-assistant" class="flex items-center space-x-3 px-4 py-2.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white">🤖 <span>AI Assistant</span></a>
+                <a href="{{ url_for('assistant.chat_assistant') }}" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition-colors">🤖 <span>AI Assistant</span></a> 
                 <a href="#" onclick="switchTab('reports')" id="nav-reports" class="flex items-center space-x-3 px-4 py-2.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white">📑 <span>Reports</span></a>
                 <a href="#" onclick="switchTab('principals')" id="nav-principals" class="flex items-center space-x-3 px-4 py-2.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white">👥 <span>Data Principals</span></a>
                 <a href="#" onclick="switchTab('consent')" id="nav-consent" class="flex items-center space-x-3 px-4 py-2.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white">🔒 <span>Consent Manager</span></a>
