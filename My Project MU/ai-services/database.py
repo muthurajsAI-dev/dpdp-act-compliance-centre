@@ -1,6 +1,7 @@
 import sqlite3
 import os
 from datetime import datetime, timezone
+from database import session 
 
 DB_PATH = os.path.join(os.path.dirname(__file__), 'app_data.db')
 
@@ -8,6 +9,7 @@ def get_db():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
+    db=session()
 
 def init_db():
     conn = get_db()

@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, session, redirect, url_for
-from database import SessionLocal
+from database import get_db
 
 audit_bp = Blueprint('audit', __name__)
 
@@ -8,8 +8,9 @@ def compliance_audit():
     if 'user_id' not in session:
         return redirect(url_for('auth.login'))
         
-    db = SessionLocal()
+    conn = get_db()
     try:
+        # You can query your database here using conn if needed later
         return render_template('compliance_audit.html')
     finally:
-        db.close()
+        conn.close()
