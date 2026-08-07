@@ -133,3 +133,25 @@ def get_user_audits(user_email):
     ).fetchall()
     conn.close()
     return [dict(r) for r in rows]
+
+def update_password(email, new_password_hash):
+    conn = get_db()
+    conn.execute(
+        'UPDATE users SET password_hash = ? WHERE email = ?',
+        (new_password_hash, email)
+    )
+    conn.commit()
+    conn.close()
+
+def delete_user_account(email):
+    conn = get_db()
+    conversation_ids = [row['id'] for row in conn.execute(
+        'SELECT id FROM conversations WHERE user_email = ?', (email,)
+    ).fetchall()]
+    for cid in conversation_ids:
+        conn.execute('DELETE FROM messages WHERE conversation_id = ?', (cid,))
+    conn.execute('DELETE FROM conversations WHERE user_email = ?', (email,))
+    conn.execute('DELETE FROM audit_logs WHERE user_email = ?', (email,))
+    conn.execute('DELETE FROM users WHERE email = ?', (email,))
+    conn.commit()
+    conn.close()

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - DPDP AI Sahayak</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white min-h-screen">
+    <div class="max-w-2xl mx-auto p-8">
+        <header class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-2xl font-bold">Settings</h1>
+                <p class="text-gray-400 text-sm">Manage your account and data.</p>
+            </div>
+            <a href="/profile" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-sm font-medium transition-colors">Back to Chat</a>
+        </header>
+
+        <!-- Account Info -->
+        <div class="bg-gray-800 p-6 rounded-xl border border-gray-700 mb-6">
+            <h2 class="font-semibold mb-3">Account</h2>
+            <p class="text-gray-400 text-sm">Signed in as</p>
+            <p id="accountEmail" class="text-lg font-medium mt-1">—</p>
+            <button onclick="signOut()" class="mt-4 text-sm text-gray-400 hover:text-red-400 transition-colors">Sign out</button>
+        </div>
+
+        <!-- Change Password -->
+        <div class="bg-gray-800 p-6 rounded-xl border border-gray-700 mb-6">
+            <h2 class="font-semibold mb-4">Change Password</h2>
+            <div class="space-y-3">
+                <input type="password" id="currentPassword" placeholder="Current password" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500">
+                <input type="password" id="newPassword" placeholder="New password (min 8 characters)" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500">
+                <button onclick="changePassword()" id="passwordBtn" class="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-lg text-sm font-medium transition-colors">Update Password</button>
+                <p id="passwordMsg" class="text-sm hidden"></p>
+            </div>
+        </div>
+
+        <!-- Export Data -->
+        <div class="bg-gray-800 p-6 rounded-xl border border-gray-700 mb-6">
+            <h2 class="font-semibold mb-2">Export Your Data</h2>
+            <p class="text-gray-400 text-sm mb-4">Download a copy of your conversations and document analyses as a JSON file.</p>
+            <button onclick="exportData()" class="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg text-sm font-medium transition-colors">Download My Data</button>
+        </div>
+
+        <!-- Delete Account -->
+        <div class="bg-gray-800 p-6 rounded-xl border border-red-900/50">
+            <h2 class="font-semibold mb-2 text-red-400">Delete Account</h2>
+            <p class="text-gray-400 text-sm mb-4">This permanently deletes your account, conversations, and audit history. This cannot be undone.</p>
+            <button onclick="confirmDelete()" class="bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-600/40 px-4 py-2 rounded-lg text-sm font-medium transition-colors">Delete My Account</button>
+        </div>
+    </div>
+
+<script>
+    const token = sessionStorage.getItem('dpdp_token');
+    if (!token) window.location.href = '/';
+
+    function getEmailFromToken() {
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            return payload.email || '—';
+        } catch (e) {
+            return '—';
+        }
+    }
+    document.getElementById('accountEmail').textContent = getEmailFromToken();
+
+    function signOut() {
+        sessionStorage.removeItem('dpdp_token');
+        window.location.href = '/';
+    }
+
+    async function changePassword() {
+        const current_password = document.getElementById('currentPassword').value;
+        const new_password = document.getElementById('newPassword').value;
+        const msg = document.getElementById('passwordMsg');
+        const btn = document.getElementById('passwordBtn');
+        btn.disabled = true;
+
+        try {
+            const res = await fetch('/account/change-password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ current_password, new_password })
+            });
+            const data = await res.json();
+            msg.classList.remove('hidden');
+            if (res.ok && data.status === 'success') {
+                msg.className = 'text-sm text-green-400';
+                msg.textContent = 'Password updated successfully.';
+                document.getElementById('currentPassword').value = '';
+                document.getElementById('newPassword').value = '';
+            } else {
+                msg.className = 'text-sm text-red-400';
+                msg.textContent = data.message || 'Could not update password.';
+            }
+        } catch (err) {
+            msg.classList.remove('hidden');
+            msg.className = 'text-sm text-red-400';
+            msg.textContent = 'Could not reach the server.';
+        } finally {
+            btn.disabled = false;
+        }
+    }
+
+    async function exportData() {
+        try {
+            const res = await fetch('/account/export-data', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const blob = await res.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'dpdp_sahayak_my_data.json';
+            a.click();
+            window.URL.revokeObjectURL(url);
+        } catch (err) {
+            alert('Could not export data. Please try again.');
+        }
+    }
+
+    async function confirmDelete() {
+        if (!confirm('Are you sure? This will permanently delete your account and all data. This cannot be undone.')) return;
+        const doubleCheck = prompt('Type DELETE to confirm.');
+        if (doubleCheck !== 'DELETE') return;
+
+        try {
+            const res = await fetch('/account/delete-account', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+            if (res.ok && data.status === 'success') {
+                sessionStorage.removeItem('dpdp_token');
+                alert('Your account has been deleted.');
+                window.location.href = '/';
+            } else {
+                alert(data.message || 'Could not delete account.');
+            }
+        } catch (err) {
+            alert('Could not reach the server.');
+        }
+    }
+</script>
+</body>
+</html>
