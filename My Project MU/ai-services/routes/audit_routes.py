@@ -10,7 +10,7 @@ def compliance_audit():
         
     conn = get_db()
     try:
-        # You can query your database here using conn if needed later
         return render_template('compliance_audit.html')
     finally:
-        conn.close()
+        if conn:
+            conn.close()
