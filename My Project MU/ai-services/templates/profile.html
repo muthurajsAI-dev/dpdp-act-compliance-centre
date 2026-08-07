@@ -99,8 +99,8 @@
                     <div class="flex justify-between items-center mb-4">
                         <h2 class="font-semibold text-white text-base">📋 Recent Audit Logs</h2>
                     </div>
-                    <div class="flex-1 flex items-center justify-center text-slate-500 text-sm text-center p-6">
-                        No documents analyzed yet — upload one from the assistant panel to get started.
+                    <div id="dashboardAuditLogs" class="flex-1 text-slate-500 text-sm text-center p-6">
+                        Loading…
                     </div>
                 </div>
 
@@ -149,30 +149,57 @@
         container.scrollTop = container.scrollHeight;
     }
 
-async function sendQuery() {
-    const inputField = document.getElementById('userInput');
-    const message = inputField.value.trim();
-    if (!message) return;
-    appendMessage('You', message, 'bg-blue-600/20 text-brandblue');
-    inputField.value = '';
-
-    try {
-        const res = await fetch('/ai/chat', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-            body: JSON.stringify({ message, conversation_id: currentConversationId })
-        });
-        const data = await res.json();
-        if (res.ok && data.status === 'success') {
-            currentConversationId = data.conversation_id;
-            appendMessage('AI Assistant', data.response, 'bg-darkbg text-slate-200');
-        } else {
-            appendMessage('System Error', data.message || 'Failed to generate response.', 'bg-red-500/10 text-brandred');
+    async function loadDashboardAudits() {
+        const container = document.getElementById('dashboardAuditLogs');
+        if (!container) return;
+        try {
+            const res = await fetch('/audit/logs', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+            if (res.ok && data.status === 'success' && data.logs.length > 0) {
+                container.className = 'flex-1 overflow-y-auto space-y-2 text-sm';
+                container.innerHTML = data.logs.slice(0, 5).map(log => `
+                    <div class="bg-darkbg p-3 rounded-lg border border-slate-800 text-left">
+                        <p class="text-slate-200 font-medium truncate">${log.filename}</p>
+                        <p class="text-slate-500 text-xs mt-1">${new Date(log.created_at).toLocaleDateString()}</p>
+                    </div>
+                `).join('');
+            } else {
+                container.innerHTML = 'No documents analyzed yet — upload one from the assistant panel to get started.';
+            }
+        } catch (err) {
+            container.innerHTML = 'Could not load audit logs.';
         }
-    } catch (err) {
-        appendMessage('Network Error', 'Could not reach the server.', 'bg-red-500/10 text-brandred');
     }
-}
+
+    loadDashboardAudits();
+
+    async function sendQuery() {
+        const inputField = document.getElementById('userInput');
+        const message = inputField.value.trim();
+        if (!message) return;
+        appendMessage('You', message, 'bg-blue-600/20 text-brandblue');
+        inputField.value = '';
+
+        try {
+            const res = await fetch('/ai/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ message, conversation_id: currentConversationId })
+            });
+            const data = await res.json();
+            if (res.ok && data.status === 'success') {
+                currentConversationId = data.conversation_id;
+                appendMessage('AI Assistant', data.response, 'bg-darkbg text-slate-200');
+                loadDashboardAudits();
+            } else {
+                appendMessage('System Error', data.message || 'Failed to generate response.', 'bg-red-500/10 text-brandred');
+            }
+        } catch (err) {
+            appendMessage('Network Error', 'Could not reach the server.', 'bg-red-500/10 text-brandred');
+        }
+    }
 
     async function handleFileUpload(inputEl) {
         const file = inputEl.files[0];
@@ -191,6 +218,7 @@ async function sendQuery() {
             const data = await res.json();
             if (res.ok && data.status === 'success') {
                 appendMessage('AI Assistant', data.analysis, 'bg-darkbg text-slate-200');
+                loadDashboardAudits();
             } else {
                 appendMessage('System Error', data.message || 'Upload failed.', 'bg-red-500/10 text-brandred');
             }
