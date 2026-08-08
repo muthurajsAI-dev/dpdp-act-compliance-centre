@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DPDP Sahayak - Compliance Reports</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans flex h-screen overflow-hidden">
+
+    <main class="flex-1 overflow-y-auto p-6 space-y-6">
+        <header class="flex justify-between items-center border-b border-slate-800 pb-4">
+            <div>
+                <h1 class="text-2xl font-bold">Compliance Reports</h1>
+                <p class="text-xs text-slate-400">Generate and download official DPDP Act readiness summaries.</p>
+            </div>
+            <a href="/profile" class="bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-lg text-sm">Back to Dashboard</a>
+        </header>
+
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-xl flex justify-between items-center">
+            <div>
+                <h3 class="font-semibold text-lg">Executive Summary Report</h3>
+                <p class="text-xs text-slate-400 mt-1">Includes all recent audit trail activities, file checks, and compliance status.</p>
+            </div>
+            <button onclick="downloadReport()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-colors">
+                📥 Download JSON Report
+            </button>
+        </div>
+
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-6">
+            <h3 class="font-semibold mb-4 text-sm text-slate-400 uppercase tracking-wider">Audit History Breakdown</h3>
+            <div id="reportsTableContainer" class="overflow-x-auto">
+                <p class="text-sm text-slate-500">Loading report records...</p>
+            </div>
+        </div>
+    </main>
+
+<script>
+    const token = sessionStorage.getItem('dpdp_token');
+    if (!token) window.location.href = '/';
+
+    async function loadReports() {
+        try {
+            const res = await fetch('/reports/data', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+            const container = document.getElementById('reportsTableContainer');
+
+            if (res.ok && data.reports.length > 0) {
+                container.innerHTML = `
+                    <table class="w-full text-left border-collapse text-sm">
+                        <thead>
+                            <tr class="border-b border-slate-800 text-slate-400">
+                                <th class="py-3 px-4">Document</th>
+                                <th class="py-3 px-4">Summary</th>
+                                <th class="py-3 px-4">Timestamp</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.reports.map(r => `
+                                <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+                                    <td class="py-3 px-4">${r.filename}</td>
+                                    <td class="py-3 px-4 text-slate-300">${r.summary}</td>
+                                    <td class="py-3 px-4 text-slate-400">${new Date(r.created_at).toLocaleDateString()}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            } else {
+                container.innerHTML = `<p class="text-sm text-slate-500">No audit logs found to generate a report from yet.</p>`;
+            }
+        } catch (err) {
+            document.getElementById('reportsTableContainer').innerHTML = `<p class="text-sm text-red-400">Failed to load report data.</p>`;
+        }
+    }
+
+    function downloadReport() {
+        fetch('/reports/data', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        })
+            .then(res => res.json())
+            .then(data => {
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'DPDP_Compliance_Report.json';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            });
+    }
+
+    loadReports();
+</script>
+</body>
+</html>
