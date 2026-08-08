@@ -10,7 +10,8 @@ from routes.audit_routes import audit_bp
 from routes.settings_routes import settings_bp    
 from routes.reports_routes import reports_bp 
 from routes.principals_routes import principals_bp
-from routes.consent_routes import consent_bp           
+from routes.consent_routes import consent_bp
+from routes.risk_routes import risk_bp             
 load_dotenv()
 
 app = Flask(__name__)
@@ -27,6 +28,7 @@ app.register_blueprint(settings_bp, url_prefix='/account')
 app.register_blueprint(reports_bp, url_prefix='/reports')
 app.register_blueprint(principals_bp, url_prefix='/principals')
 app.register_blueprint(consent_bp, url_prefix='/consent')
+app.register_blueprint(risk_bp, url_prefix='/risk')
 init_db()  # creates users table if it doesn't exist yet
 
 @app.route('/')

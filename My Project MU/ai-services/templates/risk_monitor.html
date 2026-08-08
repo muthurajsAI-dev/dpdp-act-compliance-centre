@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DPDP Sahayak - Risk Monitor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans flex h-screen overflow-hidden">
+    
+    <!-- Main Content Area -->
+    <main class="flex-1 overflow-y-auto p-6 space-y-6">
+        <header class="flex justify-between items-center border-b border-slate-800 pb-4">
+            <div>
+                <h1 class="text-2xl font-bold">Risk & Compliance Monitor</h1>
+                <p class="text-xs text-slate-400">Track security risks, data vulnerability notices, and non-compliance flags.</p>
+            </div>
+            <a href="/profile" class="bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-lg text-sm transition-colors">Back to Dashboard</a>
+        </header>
+
+        <!-- Summary Banner & Actions -->
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-xl flex justify-between items-center">
+            <div>
+                <h3 class="font-semibold text-lg">Active Risk Registry</h3>
+                <p class="text-xs text-slate-400 mt-1">Real-time surveillance logs for data processing safety flags.</p>
+            </div>
+            <div class="flex space-x-3">
+                <button onclick="openRiskModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-colors">
+                    ➕ Log Risk Event
+                </button>
+                <button onclick="exportRisks()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-colors">
+                    📥 Export Risk Logs
+                </button>
+            </div>
+        </div>
+
+        <!-- Risks Table -->
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-6">
+            <h3 class="font-semibold mb-4 text-sm text-slate-400 uppercase tracking-wider">Monitored Risk Events</h3>
+            <div id="riskTableContainer" class="overflow-x-auto">
+                <p class="text-sm text-slate-500">Loading risk data...</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal for Logging Risk -->
+    <div id="riskModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+            <h3 class="text-lg font-bold">Log New Risk Event</h3>
+            <form id="riskForm" onsubmit="submitRisk(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">User Email</label>
+                    <input type="email" id="rEmail" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-indigo-500" placeholder="user@example.com">
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">Risk Level</label>
+                    <select id="rLevel" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-indigo-500">
+                        <option value="Low">Low</option>
+                        <option value="Medium">Medium</option>
+                        <option value="High">High</option>
+                        <option value="Critical">Critical</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">Description / Vulnerability Details</label>
+                    <textarea id="rDesc" required rows="3" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-indigo-500" placeholder="Describe the compliance or security risk..."></textarea>
+                </div>
+                <div class="flex justify-end space-x-3 pt-2">
+                    <button type="button" onclick="closeRiskModal()" class="bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-lg text-sm transition-colors">Cancel</button>
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">Save Risk Log</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        async function loadRisks() {
+            try {
+                const res = await fetch('/risk/data');
+                const data = await res.json();
+                const container = document.getElementById('riskTableContainer');
+                
+                if (res.ok && data.risks && data.risks.length > 0) {
+                    container.innerHTML = `
+                        <table class="w-full text-left border-collapse text-sm">
+                            <thead>
+                                <tr class="border-b border-slate-800 text-slate-400">
+                                    <th class="py-3 px-4">ID</th>
+                                    <th class="py-3 px-4">User Email</th>
+                                    <th class="py-3 px-4">Risk Level</th>
+                                    <th class="py-3 px-4">Description</th>
+                                    <th class="py-3 px-4">Timestamp</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${data.risks.map(r => `
+                                    <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+                                        <td class="py-3 px-4">#${r.id}</td>
+                                        <td class="py-3 px-4 font-medium text-slate-200">${r.user_email}</td>
+                                        <td class="py-3 px-4">
+                                            <span class="px-2 py-1 rounded text-xs ${r.risk_level === 'Critical' ? 'bg-red-500/10 text-red-400 border border-red-500/20' : r.risk_level === 'High' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : r.risk_level === 'Medium' ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'}">
+                                                ${r.risk_level}
+                                            </span>
+                                        </td>
+                                        <td class="py-3 px-4 text-slate-300">${r.description}</td>
+                                        <td class="py-3 px-4 text-slate-400">${r.created_at}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                } else {
+                    container.innerHTML = `<p class="text-sm text-slate-500">No risk events logged yet. Click "Log Risk Event" to record one.</p>`;
+                }
+            } catch (err) {
+                container.innerHTML = `<p class="text-sm text-red-400">Failed to load risk monitor data.</p>`;
+            }
+        }
+
+        function openRiskModal() {
+            document.getElementById('riskModal').classList.remove('hidden');
+            document.getElementById('riskModal').classList.add('flex');
+        }
+
+        function closeRiskModal() {
+            document.getElementById('riskModal').classList.remove('flex');
+            document.getElementById('riskModal').classList.add('hidden');
+        }
+
+        async function submitRisk(event) {
+            event.preventDefault();
+            const user_email = document.getElementById('rEmail').value;
+            const risk_level = document.getElementById('rLevel').value;
+            const description = document.getElementById('rDesc').value;
+
+            try {
+                const res = await fetch('/risk/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_email, risk_level, description })
+                });
+                if (res.ok) {
+                    closeRiskModal();
+                    document.getElementById('riskForm').reset();
+                    loadRisks();
+                } else {
+                    alert('Failed to save risk log.');
+                }
+            } catch (err) {
+                alert('Connection error.');
+            }
+        }
+
+        async function exportRisks() {
+            try {
+                const res = await fetch('/risk/data');
+                const data = await res.json();
+                const blob = new Blob([JSON.stringify(data.risks, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'Risk_Monitor_Logs.json';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            } catch (err) {
+                alert('Failed to export risk logs.');
+            }
+        }
+
+        loadRisks();
+    </script>
+</body>
+</html>
