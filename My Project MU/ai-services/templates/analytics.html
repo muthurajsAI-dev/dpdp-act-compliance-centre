@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DPDP Sahayak - Analytics Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans flex h-screen overflow-hidden">
+    
+    <!-- Main Content Area -->
+    <main class="flex-1 overflow-y-auto p-6 space-y-6">
+        <header class="flex justify-between items-center border-b border-slate-800 pb-4">
+            <div>
+                <h1 class="text-2xl font-bold">Analytics & Compliance Metrics</h1>
+                <p class="text-xs text-slate-400">Real-time overview of user data registrations, consent health, and security risks.</p>
+            </div>
+            <a href="/profile" class="bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-lg text-sm transition-colors">Back to Dashboard</a>
+        </header>
+
+        <!-- Metric Grid Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Card 1: Data Principals -->
+            <div class="bg-slate-900 border border-slate-800 p-6 rounded-xl space-y-2">
+                <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Total Data Principals</p>
+                <h3 id="statPrincipals" class="text-3xl font-extrabold text-indigo-400">-</h3>
+                <p class="text-xs text-slate-500">Registered users in database registry</p>
+            </div>
+
+            <!-- Card 2: Consents -->
+            <div class="bg-slate-900 border border-slate-800 p-6 rounded-xl space-y-2">
+                <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Consent Health</p>
+                <div class="flex justify-between items-baseline">
+                    <h3 id="statGranted" class="text-2xl font-bold text-emerald-400">- Granted</h3>
+                    <span id="statWithdrawn" class="text-sm font-medium text-red-400">- Withdrawn</span>
+                </div>
+                <p id="statTotalConsents" class="text-xs text-slate-500">Total agreements monitored</p>
+            </div>
+
+            <!-- Card 3: Risks -->
+            <div class="bg-slate-900 border border-slate-800 p-6 rounded-xl space-y-2">
+                <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Security & Compliance Risks</p>
+                <div class="flex justify-between items-baseline">
+                    <h3 id="statCriticalRisks" class="text-2xl font-bold text-amber-400">- High/Critical</h3>
+                    <span id="statTotalRisks" class="text-sm font-medium text-slate-300">- Total Logs</span>
+                </div>
+                <p class="text-xs text-slate-500">Vulnerability flags tracked</p>
+            </div>
+        </div>
+
+        <!-- Quick Summary Action Banner -->
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-xl flex justify-between items-center">
+            <div>
+                <h3 class="font-semibold text-lg">System Audit Analytics Report</h3>
+                <p class="text-xs text-slate-400 mt-1">Export complete aggregated compliance analytics for administrative evaluation.</p>
+            </div>
+            <button onclick="exportAnalyticsReport()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-colors">
+                📥 Export Analytics JSON
+            </button>
+        </div>
+    </main>
+
+    <script>
+        async function loadAnalytics() {
+            try {
+                const res = await fetch('/analytics/data');
+                const data = await res.json();
+                
+                if (res.ok && data.metrics) {
+                    const m = data.metrics;
+                    document.getElementById('statPrincipals').innerText = m.total_principals;
+                    document.getElementById('statGranted').innerText = `${m.granted_consents} Granted`;
+                    document.getElementById('statWithdrawn').innerText = `${m.withdrawn_consents} Withdrawn`;
+                    document.getElementById('statTotalConsents').innerText = `Total agreements monitored: ${m.total_consents}`;
+                    document.getElementById('statCriticalRisks').innerText = `${m.critical_risks} High/Critical`;
+                    document.getElementById('statTotalRisks').innerText = `${m.total_risks} Total Logs`;
+                }
+            } catch (err) {
+                console.error('Failed to load analytics data', err);
+            }
+        }
+
+        async function exportAnalyticsReport() {
+            try {
+                const res = await fetch('/analytics/data');
+                const data = await res.json();
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'DPDP_Analytics_Report.json';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            } catch (err) {
+                alert('Failed to export analytics report.');
+            }
+        }
+
+        loadAnalytics();
+    </script>
+</body>
+</html>
