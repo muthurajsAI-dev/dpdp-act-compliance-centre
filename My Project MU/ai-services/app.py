@@ -8,7 +8,8 @@ from routes.ai_routes import ai_bp, limiter
 from database import init_db, create_user, get_user_by_email
 from routes.audit_routes import audit_bp  
 from routes.settings_routes import settings_bp    
-from routes.reports_routes import reports_bp      
+from routes.reports_routes import reports_bp 
+from routes.principals_routes import principals_bp       
 load_dotenv()
 
 app = Flask(__name__)
@@ -23,6 +24,7 @@ app.register_blueprint(ai_bp, url_prefix='/ai')
 app.register_blueprint(audit_bp, url_prefix='/audit')
 app.register_blueprint(settings_bp, url_prefix='/account')
 app.register_blueprint(reports_bp, url_prefix='/reports')
+app.register_blueprint(principals_bp, url_prefix='/principals') 
 init_db()  # creates users table if it doesn't exist yet
 
 @app.route('/')

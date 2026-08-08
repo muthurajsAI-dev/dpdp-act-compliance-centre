@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DPDP Sahayak - Data Principals</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans flex h-screen overflow-hidden">
+    
+    <!-- Main Content Area -->
+    <main class="flex-1 overflow-y-auto p-6 space-y-6">
+        <header class="flex justify-between items-center border-b border-slate-800 pb-4">
+            <div>
+                <h1 class="text-2xl font-bold">Data Principals Management</h1>
+                <p class="text-xs text-slate-400">View and manage registered data principals and their consent preferences under the DPDP Act.</p>
+            </div>
+            <a href="/profile" class="bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-lg text-sm transition-colors">Back to Dashboard</a>
+        </header>
+
+        <!-- Summary Banner & Actions -->
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-xl flex justify-between items-center">
+            <div>
+                <h3 class="font-semibold text-lg">Active Data Principals Registry</h3>
+                <p class="text-xs text-slate-400 mt-1">Tracks individual consent records, notices served, and grievance redressal logs.</p>
+            </div>
+            <div class="flex space-x-3">
+                <button onclick="openAddModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-colors">
+                    ➕ Add Principal
+                </button>
+                <button onclick="exportRegistry()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-colors">
+                    📥 Export Registry
+                </button>
+            </div>
+        </div>
+
+        <!-- Principals Table -->
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-6">
+            <h3 class="font-semibold mb-4 text-sm text-slate-400 uppercase tracking-wider">Registered Principals</h3>
+            <div id="principalsTableContainer" class="overflow-x-auto">
+                <p class="text-sm text-slate-500">Loading data principals...</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Add Principal Modal -->
+    <div id="addModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+            <h3 class="text-lg font-bold">Register New Data Principal</h3>
+            <form id="addPrincipalForm" onsubmit="submitPrincipal(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">Full Name</label>
+                    <input type="text" id="pName" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">Email Address</label>
+                    <input type="email" id="pEmail" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">Consent Status</label>
+                    <select id="pStatus" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-indigo-500">
+                        <option value="Granted">Granted</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Revoked">Revoked</option>
+                    </select>
+                </div>
+                <div class="flex justify-end space-x-3 pt-2">
+                    <button type="button" onclick="closeAddModal()" class="bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-lg text-sm transition-colors">Cancel</button>
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">Save Principal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        async function loadPrincipals() {
+            try {
+                const res = await fetch('/principals/data');
+                const data = await res.json();
+                const container = document.getElementById('principalsTableContainer');
+                
+                if (res.ok && data.principals && data.principals.length > 0) {
+                    container.innerHTML = `
+                        <table class="w-full text-left border-collapse text-sm">
+                            <thead>
+                                <tr class="border-b border-slate-800 text-slate-400">
+                                    <th class="py-3 px-4">ID</th>
+                                    <th class="py-3 px-4">Name</th>
+                                    <th class="py-3 px-4">Email</th>
+                                    <th class="py-3 px-4">Consent Status</th>
+                                    <th class="py-3 px-4">Registered Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${data.principals.map(p => `
+                                    <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+                                        <td class="py-3 px-4">#${p.id}</td>
+                                        <td class="py-3 px-4 font-medium">${p.name}</td>
+                                        <td class="py-3 px-4 text-slate-300">${p.email}</td>
+                                        <td class="py-3 px-4">
+                                            <span class="px-2 py-1 rounded text-xs ${p.consent_status === 'Granted' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : p.consent_status === 'Pending' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'}">
+                                                ${p.consent_status}
+                                            </span>
+                                        </td>
+                                        <td class="py-3 px-4 text-slate-400">${p.created_at}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                } else {
+                    container.innerHTML = `<p class="text-sm text-slate-500">No data principals registered in the database yet. Click "Add Principal" to add one.</p>`;
+                }
+            } catch (err) {
+                document.getElementById('principalsTableContainer').innerHTML = `<p class="text-sm text-red-400">Failed to load principals data.</p>`;
+            }
+        }
+
+        function openAddModal() {
+            document.getElementById('addModal').classList.remove('hidden');
+            document.getElementById('addModal').classList.add('flex');
+        }
+
+        function closeAddModal() {
+            document.getElementById('addModal').classList.remove('flex');
+            document.getElementById('addModal').classList.add('hidden');
+        }
+
+        async function submitPrincipal(event) {
+            event.preventDefault();
+            const name = document.getElementById('pName').value;
+            const email = document.getElementById('pEmail').value;
+            const consent_status = document.getElementById('pStatus').value;
+
+            try {
+                const res = await fetch('/principals/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, consent_status })
+                });
+                if (res.ok) {
+                    closeAddModal();
+                    document.getElementById('addPrincipalForm').reset();
+                    loadPrincipals();
+                } else {
+                    alert('Failed to save principal.');
+                }
+            } catch (err) {
+                alert('Error connecting to server.');
+            }
+        }
+
+        async function exportRegistry() {
+            try {
+                const res = await fetch('/principals/data');
+                const data = await res.json();
+                const blob = new Blob([JSON.stringify(data.principals, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'Data_Principals_Registry.json';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            } catch (err) {
+                alert('Failed to export registry.');
+            }
+        }
+
+        loadPrincipals();
+    </script>
+</body>
+</html>
