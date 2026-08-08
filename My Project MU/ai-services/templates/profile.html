@@ -33,7 +33,7 @@
             <nav class="p-4 space-y-1 text-sm">
                 <a href="#" onclick="switchTab('dashboard')" id="nav-dashboard" class="flex items-center space-x-3 px-4 py-2.5 rounded-lg bg-blue-600/20 text-brandblue font-medium">🏠 <span>Dashboard</span></a>
                 <a href="/audit/compliance-audit" id="nav-audit" class="flex items-center space-x-3 px-4 py-2.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white">📄 <span>Compliance Audit</span></a>
-                <a href="{{ url_for('assistant.chat_assistant') }}" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition-colors">🤖 <span>AI Assistant</span></a>
+                <a href="#" onclick="focusChat(); return false;" id="nav-assistant" class="flex items-center space-x-3 px-4 py-2.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white">🤖 <span>AI Assistant</span></a>
                 <a href="/reports/" id="nav-reports" class="flex items-center space-x-3 px-4 py-2.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white">📑 <span>Reports</span></a>
                 <a href="#" onclick="switchTab('principals')" id="nav-principals" class="flex items-center space-x-3 px-4 py-2.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white">👥 <span>Data Principals</span></a>
                 <a href="#" onclick="switchTab('consent')" id="nav-consent" class="flex items-center space-x-3 px-4 py-2.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white">🔒 <span>Consent Manager</span></a>
@@ -67,31 +67,19 @@
         </header>
 
         <main class="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 bg-darkbg">
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div class="bg-cardbg p-4 rounded-xl border border-slate-800 shadow-sm">
+                    <p class="text-xs text-slate-400 font-medium">Documents Analyzed</p>
+                    <p class="text-2xl font-bold text-brandgreen mt-1" id="docsAnalyzedCount">—</p>
+            </div>
+            <div class="bg-cardbg p-4 rounded-xl border border-slate-800 shadow-sm">
                     <p class="text-xs text-slate-400 font-medium">Overall Compliance</p>
-                    <p class="text-2xl font-bold text-brandgreen mt-1">—</p>
-                </div>
-                <div class="bg-cardbg p-4 rounded-xl border border-slate-800 shadow-sm">
-                    <p class="text-xs text-slate-400 font-medium">Privacy Score</p>
                     <p class="text-2xl font-bold text-brandblue mt-1">—</p>
-                </div>
-                <div class="bg-cardbg p-4 rounded-xl border border-slate-800 shadow-sm">
-                    <p class="text-xs text-slate-400 font-medium">Active Audits</p>
-                    <p class="text-2xl font-bold text-white mt-1">—</p>
-                </div>
-                <div class="bg-cardbg p-4 rounded-xl border border-slate-800 shadow-sm">
-                    <p class="text-xs text-slate-400 font-medium">AI Response Time</p>
+            </div>
+            <div class="bg-cardbg p-4 rounded-xl border border-slate-800 shadow-sm">
+                    <p class="text-xs text-slate-400 font-medium">Privacy Score</p>
                     <p class="text-2xl font-bold text-brandorange mt-1">—</p>
-                </div>
-                <div class="bg-cardbg p-4 rounded-xl border border-slate-800 shadow-sm">
-                    <p class="text-xs text-slate-400 font-medium">Security Alerts</p>
-                    <p class="text-2xl font-bold text-brandred mt-1">—</p>
-                </div>
-                <div class="bg-cardbg p-4 rounded-xl border border-slate-800 shadow-sm">
-                    <p class="text-xs text-slate-400 font-medium">Pending Requests</p>
-                    <p class="text-2xl font-bold text-slate-200 mt-1">—</p>
-                </div>
+            </div>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-6">
@@ -140,6 +128,12 @@
         window.location.href = '/';
     }
 
+    function focusChat() {
+    document.getElementById('userInput').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    document.getElementById('userInput').focus();
+
+    }
+
     function appendMessage(sender, text, classes) {
         const container = document.getElementById('chatContainer');
         const div = document.createElement('div');
@@ -158,6 +152,7 @@
             });
             const data = await res.json();
             if (res.ok && data.status === 'success' && data.logs.length > 0) {
+                document.getElementById('docsAnalyzedCount').textContent = data.logs.length;
                 container.className = 'flex-1 overflow-y-auto space-y-2 text-sm';
                 container.innerHTML = data.logs.slice(0, 5).map(log => `
                     <div class="bg-darkbg p-3 rounded-lg border border-slate-800 text-left">
@@ -166,6 +161,8 @@
                     </div>
                 `).join('');
             } else {
+                document.getElementById('docsAnalyzedCount').textContent = '0';
+                container.className = 'flex-1 text-slate-500 text-sm text-center p-6';
                 container.innerHTML = 'No documents analyzed yet — upload one from the assistant panel to get started.';
             }
         } catch (err) {
