@@ -7,7 +7,7 @@ from google import genai
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from middleware.auth import token_required
-from database import create_conversation, get_conversation, save_message, get_conversation_messages, get_user_conversations, save_audit
+from database import create_conversation, get_conversation, save_message, get_conversation_messages, get_user_conversations, save_audit, create_notification
 
 # Optional libraries for file parsing (loaded at runtime to avoid hard import errors)
 try:
@@ -142,6 +142,7 @@ def upload_file(current_user_email):
                 ]
             )
             save_audit(current_user_email, file.filename, response.text[:300])
+            create_notification(current_user_email, "Document Analyzed ✅", f"{file.filename} was analyzed successfully.", type='success')
             return jsonify({"status": "success", "analysis": response.text})
 
         else:
@@ -159,6 +160,7 @@ def upload_file(current_user_email):
         )
 
         save_audit(current_user_email, file.filename, response.text[:300])
+        create_notification(current_user_email, "Document Analyzed ✅", f"{file.filename} was analyzed successfully.", type='success')
 
         return jsonify({
             "status": "success",
@@ -166,7 +168,9 @@ def upload_file(current_user_email):
         })
     except Exception as e:
         if "429" in str(e):
+            create_notification(current_user_email, "Analysis Failed ⚠", f"Rate limit reached while analyzing {file.filename}.", type='alert')
             return jsonify({"status": "error", "message": "Limit reached. Please wait 60 seconds."}), 429
+        create_notification(current_user_email, "Analysis Failed ⚠", f"Could not analyze {file.filename}.", type='alert')
         return jsonify({"status": "error", "message": str(e)}), 500
 
 

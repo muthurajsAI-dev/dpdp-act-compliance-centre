@@ -1,0 +1,272 @@
+[
+  {
+    "section": "1",
+    "chapter": "I - Preliminary",
+    "title": "Short title and commencement",
+    "text": "(1) This Act may be called the Digital Personal Data Protection Act, 2023. (2) It shall come into force on such date as the Central Government may, by notification in the Official Gazette, appoint and different dates may be appointed for different provisions of this Act."
+  },
+  {
+    "section": "2",
+    "chapter": "I - Preliminary",
+    "title": "Definitions",
+    "text": "Defines key terms used throughout the Act, including: 'Appellate Tribunal', 'automated', 'Board' (Data Protection Board of India), 'certain legitimate uses', 'child' (an individual who has not completed the age of eighteen years), 'Consent Manager', 'data', 'Data Fiduciary' (any person who alone or with others determines the purpose and means of processing personal data), 'Data Principal' (the individual to whom the personal data relates, including parents/guardians for children or persons with disability), 'Data Processor' (processes personal data on behalf of a Data Fiduciary), 'Data Protection Officer', 'digital personal data', 'personal data' (any data about an individual who is identifiable by or in relation to such data), 'personal data breach', 'processing', 'Significant Data Fiduciary', and 'specified purpose'."
+  },
+  {
+    "section": "3",
+    "chapter": "I - Preliminary",
+    "title": "Application of Act",
+    "text": "Applies to processing of digital personal data within India where data is collected digitally or digitised subsequently, and to processing outside India if connected with offering goods/services to Data Principals in India. Does NOT apply to: personal data processed by an individual for personal/domestic purposes, or personal data made publicly available by the Data Principal themselves or a person legally obligated to make it public. Illustration: A person blogging her own views and publicly sharing her personal data on social media is not covered by this Act."
+  },
+  {
+    "section": "4",
+    "chapter": "II - Obligations of Data Fiduciary",
+    "title": "Grounds for processing personal data",
+    "text": "A person may process personal data only for a lawful purpose, either (a) for which the Data Principal has given consent, or (b) for certain legitimate uses (defined in Section 7). 'Lawful purpose' means any purpose not expressly forbidden by law."
+  },
+  {
+    "section": "5",
+    "chapter": "II - Obligations of Data Fiduciary",
+    "title": "Notice",
+    "text": "Every consent request must be accompanied by a notice informing the Data Principal of: the personal data and purpose of processing; how to exercise rights under Section 6(4) and Section 13; and how to complain to the Board. For consent given before the Act's commencement, the Data Fiduciary must give an equivalent notice as soon as reasonably practicable, and may continue processing until consent is withdrawn. The notice must be available in English or any language in the Eighth Schedule to the Constitution."
+  },
+  {
+    "section": "6",
+    "chapter": "II - Obligations of Data Fiduciary",
+    "title": "Consent",
+    "text": "Consent must be free, specific, informed, unconditional, unambiguous, with clear affirmative action, and limited to data necessary for the specified purpose. Any part of consent that infringes the Act is invalid to that extent. Consent requests must be in clear, plain language, with the option of English or an Eighth Schedule language, and must include Data Protection Officer contact details. The Data Principal can withdraw consent at any time, as easily as it was given; withdrawal does not affect the legality of prior processing. On withdrawal, the Data Fiduciary must cease processing within a reasonable time (subject to other legal obligations). Consent may be given/managed/withdrawn via a Consent Manager, who must be registered with the Board. The burden of proving valid notice and consent lies with the Data Fiduciary."
+  },
+  {
+    "section": "7",
+    "chapter": "II - Obligations of Data Fiduciary",
+    "title": "Certain legitimate uses",
+    "text": "A Data Fiduciary may process personal data without consent for: (a) the specified purpose the Data Principal voluntarily provided data for and hasn't objected to; (b) State/instrumentality-provided subsidies, benefits, services, certificates, licences or permits under prescribed conditions; (c) performance of State functions or in the interest of sovereignty, integrity, or security of India; (d) fulfilling a legal obligation to disclose information to the State; (e) compliance with judgments/decrees/orders; (f) responding to a medical emergency; (g) providing medical treatment/health services during an epidemic or public health threat; (h) safety/assistance during a disaster or breakdown of public order; (i) employment purposes or safeguarding the employer from loss/liability (e.g. preventing corporate espionage, protecting trade secrets)."
+  },
+  {
+    "section": "8",
+    "chapter": "II - Obligations of Data Fiduciary",
+    "title": "General obligations of Data Fiduciary",
+    "text": "The Data Fiduciary is responsible for compliance regardless of any contrary agreement or the Data Principal's failure to fulfil duties, including processing done by a Data Processor on its behalf (which requires a valid contract). Must ensure completeness, accuracy and consistency of data likely to be used in decisions or shared with another Data Fiduciary. Must implement appropriate technical/organisational measures and reasonable security safeguards to prevent breaches. Must notify the Board and affected Data Principals of a personal data breach. Must erase personal data when consent is withdrawn or the purpose is no longer served (unless retention is legally required), and ensure Data Processors do the same. Must publish contact information of a Data Protection Officer or equivalent contact, and establish an effective grievance redressal mechanism."
+  },
+  {
+    "section": "9",
+    "chapter": "II - Obligations of Data Fiduciary",
+    "title": "Processing of personal data of children",
+    "text": "Before processing a child's (or a person with disability's) personal data, the Data Fiduciary must obtain verifiable consent from the parent or lawful guardian. Must not process in a way likely to cause detrimental effect on a child's well-being. Must not undertake tracking, behavioural monitoring, or targeted advertising directed at children. The Central Government may exempt certain classes of Data Fiduciaries or purposes from these requirements, and may notify an age threshold above which a Data Fiduciary demonstrating verifiably safe processing is exempt."
+  },
+  {
+    "section": "10",
+    "chapter": "II - Obligations of Data Fiduciary",
+    "title": "Additional obligations of Significant Data Fiduciary",
+    "text": "The Central Government may notify certain Data Fiduciaries as 'Significant Data Fiduciaries' based on factors like volume/sensitivity of data processed, risk to Data Principals' rights, impact on sovereignty/integrity, risk to electoral democracy, security of the State, and public order. Such entities must: appoint an India-based Data Protection Officer reporting to their governing body; appoint an independent data auditor; and undertake periodic Data Protection Impact Assessments, periodic audits, and other prescribed measures."
+  },
+  {
+    "section": "11",
+    "chapter": "III - Rights and Duties of Data Principal",
+    "title": "Right to access information about personal data",
+    "text": "A Data Principal can request from a Data Fiduciary: a summary of personal data being processed and the processing activities; the identities of other Data Fiduciaries/Processors the data was shared with, with a description of what was shared; and other prescribed information. This right does not apply where data was shared with another Data Fiduciary authorised by law for purposes like offence prevention/detection/investigation or prosecution."
+  },
+  {
+    "section": "12",
+    "chapter": "III - Rights and Duties of Data Principal",
+    "title": "Right to correction and erasure of personal data",
+    "text": "A Data Principal can request correction, completion, updating, and erasure of personal data they previously consented to processing for. The Data Fiduciary must correct inaccurate/misleading data, complete incomplete data, and update data on request. On an erasure request, the Data Fiduciary must erase the data unless retention is necessary for the specified purpose or legal compliance."
+  },
+  {
+    "section": "13",
+    "chapter": "III - Rights and Duties of Data Principal",
+    "title": "Right of grievance redressal",
+    "text": "A Data Principal has the right to readily available grievance redressal from a Data Fiduciary or Consent Manager regarding any act/omission related to their personal data or exercise of their rights. The Data Fiduciary/Consent Manager must respond within a prescribed period. The Data Principal must exhaust this grievance process before approaching the Board."
+  },
+  {
+    "section": "14",
+    "chapter": "III - Rights and Duties of Data Principal",
+    "title": "Right to nominate",
+    "text": "A Data Principal can nominate another individual to exercise their rights under this Act in the event of their death or incapacity (inability to exercise rights due to unsoundness of mind or bodily infirmity)."
+  },
+  {
+    "section": "15",
+    "chapter": "III - Rights and Duties of Data Principal",
+    "title": "Duties of Data Principal",
+    "text": "A Data Principal must: comply with all applicable laws while exercising rights under this Act; not impersonate another person when providing personal data; not suppress material information when providing data for official documents/identity/address proof; not register false or frivolous grievances/complaints; and furnish only verifiably authentic information when exercising correction/erasure rights."
+  },
+  {
+    "section": "16",
+    "chapter": "IV - Special Provisions",
+    "title": "Processing of personal data outside India",
+    "text": "The Central Government may, by notification, restrict transfer of personal data to specific countries/territories outside India. This does not restrict any other law providing higher protection or greater restriction on such transfers."
+  },
+  {
+    "section": "17",
+    "chapter": "IV - Special Provisions",
+    "title": "Exemptions",
+    "text": "Most of Chapter II, Chapter III, and Section 16 do not apply where processing is necessary for: enforcing a legal right/claim; judicial/quasi-judicial/regulatory/supervisory functions; prevention, detection, investigation or prosecution of offences; processing data of persons outside India under a foreign contract; company mergers/demergers approved by a competent authority; or ascertaining financial information of a loan defaulter. The Act also does not apply to processing by notified State instrumentalities in the interest of sovereignty, security, foreign relations, or public order, nor to research/archiving/statistical purposes (if not used for Data-Principal-specific decisions). The Central Government may also exempt startups and certain Data Fiduciaries from specific sections (5, 8(3), 8(7), 10, 11), and may temporarily exempt Data Fiduciaries from any provision within 5 years of the Act's commencement."
+  },
+  {
+    "section": "18",
+    "chapter": "V - Data Protection Board of India",
+    "title": "Establishment of Board",
+    "text": "Establishes the Data Protection Board of India as a body corporate with perpetual succession, able to acquire/hold/dispose of property and sue or be sued, with headquarters at a location notified by the Central Government."
+  },
+  {
+    "section": "19",
+    "chapter": "V - Data Protection Board of India",
+    "title": "Composition and qualifications for appointment of Chairperson and Members",
+    "text": "The Board consists of a Chairperson and other Members appointed by the Central Government. Members must have ability, integrity, standing, and expertise in fields like data governance, law, dispute resolution, ICT, or digital economy; at least one Member must be a law expert."
+  },
+  {
+    "section": "20",
+    "chapter": "V - Data Protection Board of India",
+    "title": "Salary, allowances payable to and term of office",
+    "text": "Salary and terms of service are prescribed and cannot be varied to a Member's disadvantage after appointment. The Chairperson and Members hold office for two years and are eligible for reappointment."
+  },
+  {
+    "section": "21",
+    "chapter": "V - Data Protection Board of India",
+    "title": "Disqualifications for appointment and continuation as Chairperson and Members of Board",
+    "text": "A person is disqualified if adjudged insolvent, convicted of an offence involving moral turpitude, physically/mentally incapable, has a prejudicial financial/other interest, or has abused their position. Removal requires an opportunity to be heard."
+  },
+  {
+    "section": "22",
+    "chapter": "V - Data Protection Board of India",
+    "title": "Resignation by Members and filling of vacancy",
+    "text": "Members may resign via written notice to the Central Government, effective per specified conditions. Vacancies are filled by fresh appointment. For one year after leaving office, former Chairpersons/Members need prior approval to accept employment and must disclose employment with any Data Fiduciary they had proceedings against."
+  },
+  {
+    "section": "23",
+    "chapter": "V - Data Protection Board of India",
+    "title": "Proceedings of Board",
+    "text": "The Board follows prescribed procedures for meetings (including digital) and authentication of orders. Vacancies, defects in appointment/constitution, or procedural irregularities that don't affect the case's merits do not invalidate Board actions. If the Chairperson is unable to act, the senior-most Member discharges their functions."
+  },
+  {
+    "section": "24",
+    "chapter": "V - Data Protection Board of India",
+    "title": "Officers and employees of Board",
+    "text": "The Board may, with Central Government approval, appoint officers and employees as necessary, on prescribed terms and conditions."
+  },
+  {
+    "section": "25",
+    "chapter": "V - Data Protection Board of India",
+    "title": "Members and officers to be public servants",
+    "text": "The Chairperson, Members, officers and employees of the Board are deemed public servants under Section 21 of the Indian Penal Code when acting under this Act."
+  },
+  {
+    "section": "26",
+    "chapter": "V - Data Protection Board of India",
+    "title": "Powers of Chairperson",
+    "text": "The Chairperson exercises general superintendence over administrative matters, may authorise officers to scrutinise complaints/references, and may authorise Members or groups of Members to perform Board functions and allocate proceedings."
+  },
+  {
+    "section": "27",
+    "chapter": "VI - Powers, Functions and Procedure to be Followed by Board",
+    "title": "Powers and functions of Board",
+    "text": "The Board can: direct urgent remedial/mitigation measures and inquire into personal data breaches; inquire into complaints about breaches of Data Fiduciary obligations or Data Principal rights; inquire into Consent Manager breaches; inquire into breaches of Consent Manager registration conditions; and inquire into intermediary breaches referred by the Central Government — imposing penalties as provided in the Act. The Board can issue binding directions after a hearing, and may modify, suspend, withdraw or cancel directions on representation or Central Government reference."
+  },
+  {
+    "section": "28",
+    "chapter": "VI - Powers, Functions and Procedure to be Followed by Board",
+    "title": "Procedure to be followed by Board",
+    "text": "The Board functions as an independent, digital-by-design body. On receiving a complaint/intimation/reference, it determines if there are sufficient grounds to inquire; if insufficient, it closes proceedings with recorded reasons; if sufficient, it inquires following natural justice principles. The Board has civil court powers for summoning witnesses, receiving evidence, and inspecting documents. It cannot prevent premises access or seize equipment that would disrupt daily functioning, and may request police/government assistance. It can issue interim orders during inquiry and, after a hearing, close proceedings or proceed to penalties under Section 33. Frivolous or false complaints may result in a warning or costs imposed on the complainant."
+  },
+  {
+    "section": "29",
+    "chapter": "VII - Appeal and Alternate Dispute Resolution",
+    "title": "Appeal to Appellate Tribunal",
+    "text": "Any person aggrieved by a Board order/direction may appeal to the Appellate Tribunal within 60 days (extendable for sufficient cause). The Tribunal, after hearing both parties, may confirm, modify or set aside the order, and must send copies to the Board and parties. Appeals should ideally be resolved within six months, with recorded reasons if not. The Tribunal functions as a digital-by-design office."
+  },
+  {
+    "section": "30",
+    "chapter": "VII - Appeal and Alternate Dispute Resolution",
+    "title": "Orders passed by Appellate Tribunal to be executable as decree",
+    "text": "Appellate Tribunal orders are executable as a civil court decree, with the Tribunal having civil court powers, or transmittable to a civil court with local jurisdiction for execution."
+  },
+  {
+    "section": "31",
+    "chapter": "VII - Appeal and Alternate Dispute Resolution",
+    "title": "Alternate dispute resolution",
+    "text": "If the Board believes a complaint can be resolved through mediation, it may direct the parties to attempt resolution via a mutually agreed or legally provided mediator."
+  },
+  {
+    "section": "32",
+    "chapter": "VII - Appeal and Alternate Dispute Resolution",
+    "title": "Voluntary undertaking",
+    "text": "The Board may accept a voluntary undertaking from a person regarding compliance with the Act at any stage of proceedings, including commitments to take/refrain from action within a set time, and may publicise or later vary the undertaking's terms with consent. Acceptance bars further proceedings on that matter unless the person breaches the undertaking, in which case it's treated as a breach of the Act and proceedings under Section 33 may follow."
+  },
+  {
+    "section": "33",
+    "chapter": "VIII - Penalties and Adjudication",
+    "title": "Penalties",
+    "text": "If the Board finds a significant breach after inquiry, it may impose monetary penalties as specified in the Schedule, after giving the person a hearing. Factors considered include: nature, gravity and duration of breach; type of personal data affected; repetitive nature; whether the person gained or avoided loss; mitigation actions taken and their timeliness; proportionality/effectiveness of the penalty; and its likely impact on the person."
+  },
+  {
+    "section": "34",
+    "chapter": "VIII - Penalties and Adjudication",
+    "title": "Crediting sums realised by way of penalties to Consolidated Fund of India",
+    "text": "All penalty amounts collected by the Board are credited to the Consolidated Fund of India."
+  },
+  {
+    "section": "35",
+    "chapter": "IX - Miscellaneous",
+    "title": "Protection of action taken in good faith",
+    "text": "No legal proceedings lie against the Central Government, the Board, or its Chairperson/Members/officers/employees for anything done in good faith under this Act."
+  },
+  {
+    "section": "36",
+    "chapter": "IX - Miscellaneous",
+    "title": "Power to call for information",
+    "text": "The Central Government may require the Board and any Data Fiduciary or intermediary to furnish information it calls for."
+  },
+  {
+    "section": "37",
+    "chapter": "IX - Miscellaneous",
+    "title": "Power of Central Government to issue directions",
+    "text": "If the Board reports that a Data Fiduciary has been penalised twice or more and advises blocking public access to related information in the public interest, the Central Government (after hearing the Data Fiduciary) may direct any agency or intermediary to block public access to that information."
+  },
+  {
+    "section": "38",
+    "chapter": "IX - Miscellaneous",
+    "title": "Consistency with other laws",
+    "text": "This Act's provisions are in addition to, not in derogation of, other laws. Where this Act conflicts with another law, this Act prevails to the extent of the conflict."
+  },
+  {
+    "section": "39",
+    "chapter": "IX - Miscellaneous",
+    "title": "Bar of jurisdiction",
+    "text": "No civil court has jurisdiction over matters the Board is empowered to handle under this Act, and no court may grant an injunction regarding actions taken or to be taken under this Act's powers."
+  },
+  {
+    "section": "40",
+    "chapter": "IX - Miscellaneous",
+    "title": "Power to make rules",
+    "text": "The Central Government may make rules (after previous publication) to carry out the Act's purposes, covering matters like: notice content and form; Consent Manager obligations and registration; the manner of processing children's data; Data Protection Impact Assessment details; grievance redressal timelines; Board Member appointment, salary, and procedures; and appeal fees/procedures, among many other prescribed matters."
+  },
+  {
+    "section": "41",
+    "chapter": "IX - Miscellaneous",
+    "title": "Laying of rules and certain notifications",
+    "text": "Rules and notifications under Sections 16 and 42 must be laid before Parliament for 30 days; Parliament may modify or annul them, without affecting anything previously done under them."
+  },
+  {
+    "section": "42",
+    "chapter": "IX - Miscellaneous",
+    "title": "Power to amend Schedule",
+    "text": "The Central Government may amend the penalty Schedule by notification, but cannot increase any penalty to more than twice its originally enacted amount."
+  },
+  {
+    "section": "43",
+    "chapter": "IX - Miscellaneous",
+    "title": "Power to remove difficulties",
+    "text": "If any difficulty arises in implementing the Act, the Central Government may make necessary provisions by order (not inconsistent with the Act) within 3 years of commencement, and must lay such orders before Parliament."
+  },
+  {
+    "section": "44",
+    "chapter": "IX - Miscellaneous",
+    "title": "Amendments to certain Acts",
+    "text": "Makes consequential amendments to the Telecom Regulatory Authority of India Act 1997 (Appellate Tribunal provisions), the Information Technology Act 2000 (omits Section 43A on compensation for data breach, since this Act now covers it; adds cross-reference in Section 81), and the Right to Information Act 2005 (updates the personal information exemption in Section 8(1)(j))."
+  },
+  {
+    "section": "Schedule",
+    "chapter": "Schedule",
+    "title": "Penalties for breach of provisions",
+    "text": "Monetary penalties under Section 33(1): Breach of reasonable security safeguards (Section 8(5)) — up to ₹250 crore. Breach of breach-notification obligation to Board/Data Principal (Section 8(6)) — up to ₹200 crore. Breach of obligations regarding children's data (Section 9) — up to ₹200 crore. Breach of Significant Data Fiduciary obligations (Section 10) — up to ₹150 crore. Breach of Data Principal duties (Section 15) — up to ₹10,000. Breach of a voluntary undertaking (Section 32) — up to the penalty applicable for the original breach. Breach of any other provision of the Act or rules — up to ₹50 crore."
+  }
+]

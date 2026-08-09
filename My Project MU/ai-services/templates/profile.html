@@ -50,18 +50,46 @@
 
     <div class="flex-1 flex flex-col overflow-hidden">
         <header class="h-16 bg-cardbg border-b border-slate-800 flex items-center justify-between px-6">
-            <div class="flex items-center space-x-4 w-1/3">
-                <input type="text" placeholder="🔍 Global Search compliance clauses, audits..." class="bg-darkbg border border-slate-700 text-sm rounded-lg px-4 py-2 w-full focus:outline-none focus:border-brandblue text-slate-200">
+            <div class="flex items-center space-x-4 w-1/3 relative">
+                <input type="text" id="globalSearchInput" placeholder="🔍 Global Search compliance clauses, audits..." class="bg-darkbg border border-slate-700 text-sm rounded-lg px-4 py-2 w-full focus:outline-none focus:border-brandblue text-slate-200" oninput="handleGlobalSearch(this.value)">
+                <div id="searchResults" class="hidden absolute top-full left-0 mt-2 w-full bg-cardbg border border-slate-800 rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto"></div>
             </div>
             <div class="flex items-center space-x-5 text-sm">
                 <span class="flex items-center space-x-1 text-xs bg-emerald-500/10 text-brandgreen border border-emerald-500/20 px-2.5 py-1 rounded-full">
                     <span class="h-2 w-2 rounded-full bg-brandgreen inline-block animate-ping mr-1"></span> System Optimal
                 </span>
-                <button class="relative text-slate-400 hover:text-white">🔔</button>
-                <div class="flex items-center space-x-2 border-l border-slate-700 pl-4">
-                    <div class="h-8 w-8 rounded-full bg-brandblue flex items-center justify-center font-bold text-white">AD</div>
-                    <span class="font-medium text-slate-200">Admin</span>
-                    <button onclick="logout()" class="text-xs text-slate-400 hover:text-brandred ml-2">Sign out</button>
+
+                <div class="relative">
+                    <button onclick="toggleNotifications()" class="relative text-slate-400 hover:text-white">
+                        🔔
+                        <span id="notifBadge" class="hidden absolute -top-1 -right-1 bg-brandred text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center">0</span>
+                    </button>
+                    <div id="notifMenu" class="hidden absolute right-0 mt-2 w-80 bg-cardbg border border-slate-800 rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto">
+                        <div class="flex justify-between items-center px-4 py-3 border-b border-slate-800">
+                            <p class="text-sm font-semibold text-white">Notifications</p>
+                            <button onclick="markAllNotificationsRead()" class="text-xs text-brandblue hover:underline">Mark all read</button>
+                        </div>
+                        <div id="notifList" class="divide-y divide-slate-800">
+                            <p class="text-slate-500 text-sm text-center p-6">Loading…</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="relative border-l border-slate-700 pl-4">
+                    <button onclick="toggleAdminMenu()" class="flex items-center space-x-2 focus:outline-none">
+                        <div class="h-8 w-8 rounded-full bg-brandblue flex items-center justify-center font-bold text-white">AD</div>
+                        <span class="font-medium text-slate-200">Admin</span>
+                        <span class="text-slate-400 text-xs">▾</span>
+                    </button>
+                    <div id="adminMenu" class="hidden absolute right-0 mt-2 w-56 bg-cardbg border border-slate-800 rounded-lg shadow-lg py-2 z-50">
+                        <div class="px-4 py-2 border-b border-slate-800">
+                            <p class="text-sm font-medium text-white">Admin</p>
+                            <p class="text-xs text-slate-400" id="adminEmail">admin@example.com</p>
+                        </div>
+                        <a href="/account/settings" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-800">⚙ Account Settings</a>
+                        <a href="#" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-800">👤 Profile</a>
+                        <button onclick="logout()" class="w-full text-left px-4 py-2 text-sm text-brandred hover:bg-slate-800">Sign out</button>
+                    </div>
                 </div>
             </div>
         </header>
@@ -216,6 +244,7 @@
             if (res.ok && data.status === 'success') {
                 appendMessage('AI Assistant', data.analysis, 'bg-darkbg text-slate-200');
                 loadDashboardAudits();
+                loadNotifications();
             } else {
                 appendMessage('System Error', data.message || 'Upload failed.', 'bg-red-500/10 text-brandred');
             }
@@ -227,5 +256,155 @@
     function switchTab(tabName) {
         alert('This section is not built yet.');
     }
+
+    // ---- Admin dropdown ----
+    function toggleAdminMenu() {
+        document.getElementById('adminMenu').classList.toggle('hidden');
+    }
+
+    // ---- Notifications ----
+    async function loadNotifications() {
+        try {
+            const res = await fetch('/notifications/list', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+            if (res.ok && data.status === 'success') {
+                const badge = document.getElementById('notifBadge');
+                if (data.unread_count > 0) {
+                    badge.textContent = data.unread_count > 9 ? '9+' : data.unread_count;
+                    badge.classList.remove('hidden');
+                } else {
+                    badge.classList.add('hidden');
+                }
+
+                const list = document.getElementById('notifList');
+                if (data.notifications.length === 0) {
+                    list.innerHTML = '<p class="text-slate-500 text-sm text-center p-6">No notifications yet.</p>';
+                    return;
+                }
+                const iconFor = (type) => type === 'success' ? '✅' : type === 'alert' ? '⚠️' : 'ℹ️';
+                list.innerHTML = data.notifications.map(n => `
+                    <div class="px-4 py-3 ${n.is_read ? 'opacity-60' : ''}">
+                        <p class="text-sm text-slate-200">${iconFor(n.type)} <span class="font-medium">${n.title}</span></p>
+                        <p class="text-xs text-slate-400 mt-1">${n.message}</p>
+                        <p class="text-[11px] text-slate-500 mt-1">${new Date(n.created_at).toLocaleString()}</p>
+                    </div>
+                `).join('');
+            }
+        } catch (err) {
+            console.error('Failed to load notifications:', err);
+        }
+    }
+
+    function toggleNotifications() {
+        document.getElementById('notifMenu').classList.toggle('hidden');
+    }
+
+    async function markAllNotificationsRead() {
+        try {
+            await fetch('/notifications/read-all', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            loadNotifications();
+        } catch (err) {
+            console.error('Failed to mark notifications read:', err);
+        }
+    }
+
+    // Close dropdowns when clicking outside them
+    document.addEventListener('click', function(e) {
+        const notifMenu = document.getElementById('notifMenu');
+        const notifBtn = e.target.closest('button[onclick="toggleNotifications()"]');
+        if (!notifBtn && notifMenu && !notifMenu.contains(e.target)) notifMenu.classList.add('hidden');
+
+        const adminMenu = document.getElementById('adminMenu');
+        const adminBtn = e.target.closest('button[onclick="toggleAdminMenu()"]');
+        if (!adminBtn && adminMenu && !adminMenu.contains(e.target)) adminMenu.classList.add('hidden');
+    });
+
+    loadNotifications();
+    setInterval(loadNotifications, 30000); // refresh every 30s
+
+    // ---- Global Search ----
+    let searchDebounceTimer = null;
+
+    function handleGlobalSearch(value) {
+        clearTimeout(searchDebounceTimer);
+        const resultsBox = document.getElementById('searchResults');
+        const query = value.trim();
+
+        if (!query) {
+            resultsBox.classList.add('hidden');
+            resultsBox.innerHTML = '';
+            return;
+        }
+
+        searchDebounceTimer = setTimeout(async () => {
+            try {
+                const res = await fetch(`/search?q=${encodeURIComponent(query)}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                if (res.ok && data.status === 'success') {
+                    renderSearchResults(data);
+                }
+            } catch (err) {
+                console.error('Search failed:', err);
+            }
+        }, 300);
+    }
+
+    function renderSearchResults(data) {
+        const resultsBox = document.getElementById('searchResults');
+        const hasResults = data.documents.length || data.clauses.length || data.nav.length;
+
+        if (!hasResults) {
+            resultsBox.innerHTML = '<p class="text-slate-500 text-sm text-center p-4">No results found.</p>';
+            resultsBox.classList.remove('hidden');
+            return;
+        }
+
+        let html = '';
+
+        if (data.nav.length) {
+            html += '<p class="text-xs text-slate-500 font-semibold px-4 pt-3 pb-1">Pages</p>';
+            html += data.nav.map(n => `
+                <a href="${n.url}" class="block px-4 py-2 text-sm text-slate-200 hover:bg-slate-800">📍 ${n.label}</a>
+                `).join('');
+        }
+
+        if (data.documents.length) {
+            html += '<p class="text-xs text-slate-500 font-semibold px-4 pt-3 pb-1">Documents</p>';
+            html += data.documents.map(d => `
+                <div class="px-4 py-2 text-sm text-slate-200 hover:bg-slate-800">
+                    📄 ${d.filename}
+                    <p class="text-xs text-slate-500">${new Date(d.created_at).toLocaleDateString()}</p>
+                </div>
+            `).join('');
+        }
+
+        if (data.clauses.length) {
+            html += '<p class="text-xs text-slate-500 font-semibold px-4 pt-3 pb-1">DPDP Act Clauses</p>';
+            html += data.clauses.map(c => `
+                <div class="px-4 py-2 text-sm text-slate-200 hover:bg-slate-800">
+                    ⚖️ Section ${c.section}: ${c.title}
+                    <p class="text-xs text-slate-500 mt-1 line-clamp-2">${c.text.slice(0, 120)}...</p>
+                </div>
+            `).join('');
+        }
+
+        resultsBox.innerHTML = html;
+        resultsBox.classList.remove('hidden');
+    }
+
+    document.addEventListener('click', function(e) {
+        const resultsBox = document.getElementById('searchResults');
+        const input = document.getElementById('globalSearchInput');
+        if (resultsBox && !resultsBox.contains(e.target) && e.target !== input) {
+            resultsBox.classList.add('hidden');
+        }
+    });
 </script>
 </html>

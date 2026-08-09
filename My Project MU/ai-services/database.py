@@ -1,8 +1,11 @@
 import sqlite3
 import os
+import json
 from datetime import datetime, timezone
 
 DB_PATH = os.path.join(os.path.dirname(__file__), 'app_data.db')
+DPDP_SECTIONS_PATH = os.path.join(os.path.dirname(__file__), 'data', 'dpdp_sections.json')
+_dpdp_sections_cache = None
 
 def get_db():
     conn = sqlite3.connect(DB_PATH)
@@ -63,6 +66,17 @@ def init_db():
             user_email TEXT NOT NULL,
             filename TEXT NOT NULL,
             summary TEXT NOT NULL,
+            created_at TEXT NOT NULL
+        )
+    ''')
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS notifications (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_email TEXT NOT NULL,
+            type TEXT NOT NULL DEFAULT 'info',
+            title TEXT NOT NULL,
+            message TEXT NOT NULL,
+            is_read INTEGER NOT NULL DEFAULT 0,
             created_at TEXT NOT NULL
         )
     ''')
@@ -155,6 +169,7 @@ def delete_user_account(email):
     conn.execute('DELETE FROM users WHERE email = ?', (email,))
     conn.commit()
     conn.close()
+
 def init_chat_db():
     conn = sqlite3.connect('your_database.db')
     cursor = conn.cursor()
@@ -168,4 +183,67 @@ def init_chat_db():
     ''')
     conn.commit()
     conn.close()
-    
+
+def create_notification(user_email, title, message, type='info'):
+    conn = get_db()
+    conn.execute(
+        'INSERT INTO notifications (user_email, type, title, message, is_read, created_at) VALUES (?, ?, ?, ?, 0, ?)',
+        (user_email, type, title, message, datetime.now(timezone.utc).isoformat())
+    )
+    conn.commit()
+    conn.close()
+
+def get_user_notifications(user_email, limit=20):
+    conn = get_db()
+    rows = conn.execute(
+        'SELECT id, type, title, message, is_read, created_at FROM notifications WHERE user_email = ? ORDER BY created_at DESC LIMIT ?',
+        (user_email, limit)
+    ).fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+def get_unread_notification_count(user_email):
+    conn = get_db()
+    row = conn.execute(
+        'SELECT COUNT(*) as cnt FROM notifications WHERE user_email = ? AND is_read = 0',
+        (user_email,)
+    ).fetchone()
+    conn.close()
+    return row['cnt']
+
+def mark_notification_read(notification_id, user_email):
+    conn = get_db()
+    conn.execute(
+        'UPDATE notifications SET is_read = 1 WHERE id = ? AND user_email = ?',
+        (notification_id, user_email)
+    )
+    conn.commit()
+    conn.close()
+
+def mark_all_notifications_read(user_email):
+    conn = get_db()
+    conn.execute('UPDATE notifications SET is_read = 1 WHERE user_email = ?', (user_email,))
+    conn.commit()
+    conn.close()
+
+def load_dpdp_sections():
+    global _dpdp_sections_cache
+    if _dpdp_sections_cache is None:
+        try:
+            with open(DPDP_SECTIONS_PATH, 'r', encoding='utf-8') as f:
+                _dpdp_sections_cache = json.load(f)
+        except Exception:
+            _dpdp_sections_cache = []
+    return _dpdp_sections_cache
+
+def search_dpdp_sections(query, limit=5):
+    query = query.lower().strip()
+    if not query:
+        return []
+    sections = load_dpdp_sections()
+    matches = []
+    for sec in sections:
+        haystack = f"{sec['title']} {sec['text']}".lower()
+        if query in haystack or query in sec['section'].lower():
+            matches.append(sec)
+    return matches[:limit]
